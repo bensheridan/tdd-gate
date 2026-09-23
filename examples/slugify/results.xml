@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="5" failures="2" errors="0" time="0.003545875">
+    <testsuite name="tests/slugify.test.ts" timestamp="2026-09-23T08:23:06.005Z" hostname="MacBook-Pro.local" tests="5" failures="2" errors="0" skipped="0" time="0.003545875">
+        <testcase classname="tests/slugify.test.ts" name="slugify &gt; lowercases letters" time="0.0005695">
+        </testcase>
+        <testcase classname="tests/slugify.test.ts" name="slugify &gt; collapses runs of spaces into one hyphen" time="0.001978666">
+            <failure message="expected &apos;a---b&apos; to be &apos;a-b&apos; // Object.is equality" type="AssertionError">
+AssertionError: expected &apos;a---b&apos; to be &apos;a-b&apos; // Object.is equality
+
+Expected: &quot;a-b&quot;
+Received: &quot;a---b&quot;
+
+ ❯ tests/slugify.test.ts:10:34
+            </failure>
+        </testcase>
+        <testcase classname="tests/slugify.test.ts" name="slugify &gt; turns an ampersand into the word and" time="0.000296542">
+            <failure message="expected &apos;salt--pepper&apos; to be &apos;salt-and-pepper&apos; // Object.is equality" type="AssertionError">
+AssertionError: expected &apos;salt--pepper&apos; to be &apos;salt-and-pepper&apos; // Object.is equality
+
+Expected: &quot;salt-and-pepper&quot;
+Received: &quot;salt--pepper&quot;
+
+ ❯ tests/slugify.test.ts:14:42
+            </failure>
+        </testcase>
+        <testcase classname="tests/slugify.test.ts" name="slugify &gt; trims hyphens" time="0.000088666">
+        </testcase>
+        <testcase classname="tests/slugify.test.ts" name="slugify &gt; clears the cache" time="0.000072292">
+        </testcase>
+    </testsuite>
+</testsuites>

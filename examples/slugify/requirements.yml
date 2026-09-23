@@ -1,0 +1,24 @@
+# The plan, split into one testable behaviour per requirement. Both agents get this file;
+# tdd-gate judges their work against it. Write each `text` as the exact condition.
+thresholds:
+  covered: 0.70   # p(test is about the requirement) to count as covering it
+  possible: 0.35  # between possible and covered: a person should look
+  strong: 0.60    # p(assertions would catch a wrong implementation)
+  route: 0.60     # choice confidence below which a failure goes to a person
+
+requirements:
+  - id: lowercase
+    text: slugify(title) returns the title with every letter in lowercase.
+  - id: whitespace
+    text: slugify(title) replaces each run of one or more whitespace characters with a single hyphen.
+  - id: strip
+    text: >-
+      slugify(title) removes every character that is not a letter, a digit, a hyphen or
+      whitespace (whitespace is covered by the whitespace requirement). Such characters are
+      dropped, not replaced with a word or a hyphen.
+  - id: trim
+    text: The string returned by slugify never starts or ends with a hyphen.
+  - id: max-length
+    text: >-
+      slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last
+      hyphen before the limit when there is one.

@@ -1,0 +1,29 @@
+{
+  "name": "tdd-gate",
+  "version": "0.1.0",
+  "description": "Keeps a test-writing agent and a code-writing agent on the same plan: asks TypeSafe (Jev) which tests cover which requirements, and who a failing test should go back to.",
+  "type": "module",
+  "bin": {
+    "tdd-gate": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "js-yaml": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  },
+  "private": true,
+  "license": "MIT"
+}
