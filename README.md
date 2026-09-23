@@ -353,3 +353,12 @@ In priority order, from the first eval results. Re-score with `eval --cases eval
 7. **Review tooling**: labeling means editing JSON; a review page would be faster.
 8. **More plans**: three small plans is a start, not a benchmark. Include some with deliberately
    conflicting requirements, since that is where runs got stuck.
+9. **Try [Laya](https://huggingface.co/convaiinnovations/laya) as a local backend.** An open
+   (Apache 2.0) System 1 decision model with the same choice/score/noul shape as Jev, runnable
+   locally (`pip install "laya[serve]"`). Its own benchmarks claim higher accuracy, better
+   calibration and ~8x lower latency than Jev, but worse on 50+ options, and a third-party write-up
+   reports zero-shot accuracy near 36% without fine-tuning. Obstacle: a 512-token context (1,024
+   multilingual), while coverage, blame and drift states are ~1-1.6k tokens, so questions would
+   need smaller state (one requirement and one test per call). Plan: a `--backend laya` adapter
+   behind `SystemOneCaller`, then `eval --cases eval/cases` for both backends on the same cases.
+   The eval set could also serve as fine-tuning data.
