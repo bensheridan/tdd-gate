@@ -1,0 +1,221 @@
+{
+  "id": "run-2026-09-23T09-11-50-785Z/001-coverage",
+  "kind": "run",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)"
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "coverage",
+    "tests": [
+      {
+        "id": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+        "file": "tests/duration.test.ts",
+        "name": "interface > exports parseDuration as a function returning a number",
+        "line": 5,
+        "code": "    5|   it(\"exports parseDuration as a function returning a number\", () => {\n    6|     expect(typeof parseDuration).toBe(\"function\");\n    7|     expect(typeof parseDuration(\"1h\")).toBe(\"number\");\n    8|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::empty > throws for an empty string",
+        "file": "tests/duration.test.ts",
+        "name": "empty > throws for an empty string",
+        "line": 49,
+        "code": "   49|   it(\"throws for an empty string\", () => {\n   50|     expect(() => parseDuration(\"\")).toThrow(Error);\n   51|   });",
+        "truncated": false
+      }
+    ]
+  },
+  "expect": {},
+  "labelSource": "unlabeled",
+  "recorded": {
+    "requirements": [
+      {
+        "requirementId": "interface",
+        "status": "weak",
+        "route": "test-agent",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+            "covers": 0.95,
+            "asserts": 0.31
+          }
+        ],
+        "best": 0.95
+      },
+      {
+        "requirementId": "units",
+        "status": "uncovered",
+        "route": "test-agent",
+        "tests": [],
+        "best": 0.16
+      },
+      {
+        "requirementId": "order",
+        "status": "uncovered",
+        "route": "test-agent",
+        "tests": [],
+        "best": 0.07
+      },
+      {
+        "requirementId": "bare-seconds",
+        "status": "uncovered",
+        "route": "test-agent",
+        "tests": [],
+        "best": 0.04
+      },
+      {
+        "requirementId": "empty",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::empty > throws for an empty string",
+            "covers": 0.98,
+            "asserts": 0.91
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "invalid",
+        "status": "uncovered",
+        "route": "test-agent",
+        "tests": [],
+        "best": 0.29
+      }
+    ],
+    "conflicts": [],
+    "orphans": [],
+    "pairs": [
+      {
+        "testId": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.31,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+        "requirementId": "units",
+        "covers": 0.16,
+        "asserts": 0.14,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+        "requirementId": "bare-seconds",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > exports parseDuration as a function returning a number",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > throws for an empty string",
+        "requirementId": "interface",
+        "covers": 0.51,
+        "asserts": 0.44,
+        "contradicts": 0.57
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > throws for an empty string",
+        "requirementId": "units",
+        "covers": 0.04,
+        "asserts": 0.08,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > throws for an empty string",
+        "requirementId": "order",
+        "covers": 0.07,
+        "asserts": 0.15,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > throws for an empty string",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > throws for an empty string",
+        "requirementId": "empty",
+        "covers": 0.98,
+        "asserts": 0.91,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > throws for an empty string",
+        "requirementId": "invalid",
+        "covers": 0.29,
+        "asserts": 0.25,
+        "contradicts": 0.09
+      }
+    ],
+    "failures": [],
+    "truncatedTests": [],
+    "usage": {
+      "requests": 2,
+      "questions": 36,
+      "inputTokens": 6838,
+      "outputTokens": 680
+    }
+  },
+  "meta": {
+    "requirements": "/private/tmp/claude-501/-Users-bensheridan-Documents-GitHub-typesafe/f323b9d7-3bd4-4831-ab1a-82562c6ba89d/scratchpad/evalws3/duration/requirements.yml",
+    "testAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep",
+    "codeAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  }
+}

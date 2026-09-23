@@ -1,0 +1,94 @@
+{
+  "id": "slugify/add-feature-drift",
+  "kind": "add-feature",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "drift",
+    "diff": "diff --git a/src/slugify.ts b/src/slugify.ts\nindex 2648a62..685f837 100644\n--- a/src/slugify.ts\n+++ b/src/slugify.ts\n@@ -1,16 +1,24 @@\n-export function slugify(title: string, options?: { maxLength?: number }): string {\n+export function slugify(\n+  title: string,\n+  options?: { maxLength?: number; separator?: string },\n+): string {\n   let slug = title\n     .toLowerCase()\n     .replace(/[^\\p{L}\\p{Nd}\\s-]/gu, \"\")\n     .replace(/\\s+/gu, \"-\")\n     .replace(/^-+|-+$/g, \"\");\n \n   const maxLength = options?.maxLength;\n   if (maxLength !== undefined && slug.length > maxLength) {\n     const truncated = slug.slice(0, Math.max(0, maxLength));\n     const lastHyphen = truncated.lastIndexOf(\"-\");\n     slug = (lastHyphen > 0 ? truncated.slice(0, lastHyphen) : truncated).replace(/-+$/g, \"\");\n   }\n \n+  const separator = options?.separator;\n+  if (separator !== undefined && separator !== \"-\") {\n+    slug = slug.replace(/-/g, separator);\n+  }\n+\n   return slug;\n }\n"
+  },
+  "expect": {
+    "flagged": [
+      "unrequested-behaviour"
+    ]
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "lowercase",
+    "asked": "Add one small feature that the requirements do not ask for (your choice: an extra option, caching, logging, or an extra exported function). Keep all existing behaviour. Do not write tests.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "drift",
+    "findings": [
+      {
+        "gate": "drift",
+        "file": "src/slugify.ts",
+        "startLine": 1,
+        "endLine": 22,
+        "ruleId": "unrequested-behaviour",
+        "title": "Behaviour no requirement asks for",
+        "severity": "error",
+        "probability": 0.95,
+        "band": "violation",
+        "route": "code-agent",
+        "message": "Adds behaviour no requirement asks for (p=0.95): remove it, or add the requirement to the plan"
+      }
+    ],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 8,
+      "inputTokens": 2004,
+      "outputTokens": 147
+    },
+    "trace": [
+      {
+        "file": "src/slugify.ts",
+        "startLine": 1,
+        "endLine": 22,
+        "requirements": []
+      }
+    ]
+  }
+}

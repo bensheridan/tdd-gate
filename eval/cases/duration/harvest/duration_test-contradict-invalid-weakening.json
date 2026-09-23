@@ -1,0 +1,97 @@
+{
+  "id": "duration/test-contradict-invalid-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)"
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/duration.test.ts b/tests/duration.test.ts\nindex 12afd89..8cc1a95 100644\n--- a/tests/duration.test.ts\n+++ b/tests/duration.test.ts\n@@ -117,21 +117,21 @@ describe(\"invalid\", () => {\n \n   it('[invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw', () => {\n     expect(() => parseDuration(\"-5\")).toThrow(Error);\n     expect(() => parseDuration(\"+5\")).toThrow(Error);\n     expect(() => parseDuration(\"-1h\")).toThrow(Error);\n     expect(() => parseDuration(\"+1m\")).toThrow(Error);\n     expect(() => parseDuration(\"1h-30m\")).toThrow(Error);\n   });\n \n   it('[invalid] decimal points \"1.5h\", \"1.5\" throw', () => {\n-    expect(() => parseDuration(\"1.5h\")).toThrow(Error);\n+    expect(parseDuration(\"1.5h\")).toBe(5400);\n     expect(() => parseDuration(\"1.5\")).toThrow(Error);\n   });\n \n   it('[invalid] letters \"abc\", \"h\" throw', () => {\n     expect(() => parseDuration(\"abc\")).toThrow(Error);\n     expect(() => parseDuration(\"h\")).toThrow(Error);\n   });\n \n   it('[invalid] other characters \"1_000\", \"1,5s\" throw', () => {\n     expect(() => parseDuration(\"1_000\")).toThrow(Error);\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "duration",
+    "requirement": "invalid",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [
+      {
+        "gate": "weakening",
+        "ruleId": "removed-assertion",
+        "title": "Assertion or test removed",
+        "severity": "warning",
+        "file": "tests/duration.test.ts",
+        "startLine": 127,
+        "endLine": 127,
+        "probability": 0.63,
+        "band": "possible",
+        "route": "human",
+        "message": "Assertion or test removed (p=0.63)"
+      },
+      {
+        "gate": "weakening",
+        "ruleId": "loosened-assertion",
+        "title": "Assertion loosened",
+        "severity": "error",
+        "file": "tests/duration.test.ts",
+        "startLine": 127,
+        "endLine": 127,
+        "probability": 0.48,
+        "band": "possible",
+        "route": "human",
+        "message": "Assertion loosened (p=0.48)"
+      }
+    ],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 1122,
+      "outputTokens": 40
+    }
+  }
+}

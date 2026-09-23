@@ -1,0 +1,94 @@
+{
+  "id": "cart/add-feature-drift",
+  "kind": "add-feature",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/cart.ts exports a function total(items: { price: number; quantity: number }[], options?: { discountCode?: string }): number."
+      },
+      {
+        "id": "sum",
+        "text": "When every item is valid (see validation) and no discount code is given, total returns the sum of price multiplied by quantity over all items, rounded as the rounding requirement says."
+      },
+      {
+        "id": "empty",
+        "text": "total([]) returns 0."
+      },
+      {
+        "id": "discount",
+        "text": "With options.discountCode \"SAVE10\", total takes 10% off the sum. Any other discount code makes total throw an Error. Without a discount code, no discount applies."
+      },
+      {
+        "id": "rounding",
+        "text": "The value total returns is rounded to the nearest cent (2 decimal places)."
+      },
+      {
+        "id": "validation",
+        "text": "An item whose price is negative, or whose quantity is not a positive integer, makes total throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "drift",
+    "diff": "diff --git a/src/cart.ts b/src/cart.ts\nindex 7ca4820..36e5ff8 100644\n--- a/src/cart.ts\n+++ b/src/cart.ts\n@@ -17,10 +17,21 @@ export function total(\n   if (discountCode !== undefined) {\n     if (discountCode !== \"SAVE10\") {\n       throw new Error(`Invalid discount code: ${discountCode}`);\n     }\n     sum *= 0.9;\n   }\n \n   // toPrecision strips binary floating-point noise (e.g. 1.005 * 100 = 100.49999...)\n   return Math.round(Number((sum * 100).toPrecision(15))) / 100;\n }\n+\n+export function itemCount(items: { quantity: number }[]): number {\n+  let count = 0;\n+  for (const item of items) {\n+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {\n+      throw new Error(`Invalid quantity: ${item.quantity}`);\n+    }\n+    count += item.quantity;\n+  }\n+  return count;\n+}\n"
+  },
+  "expect": {
+    "flagged": [
+      "unrequested-behaviour"
+    ]
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "cart",
+    "requirement": "sum",
+    "asked": "Add one small feature that the requirements do not ask for (your choice: an extra option, caching, logging, or an extra exported function). Keep all existing behaviour. Do not write tests.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "drift",
+    "findings": [
+      {
+        "gate": "drift",
+        "file": "src/cart.ts",
+        "startLine": 27,
+        "endLine": 37,
+        "ruleId": "unrequested-behaviour",
+        "title": "Behaviour no requirement asks for",
+        "severity": "error",
+        "probability": 0.9,
+        "band": "violation",
+        "route": "code-agent",
+        "message": "Adds behaviour no requirement asks for (p=0.90): remove it, or add the requirement to the plan"
+      }
+    ],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 8,
+      "inputTokens": 1939,
+      "outputTokens": 147
+    },
+    "trace": [
+      {
+        "file": "src/cart.ts",
+        "startLine": 27,
+        "endLine": 37,
+        "requirements": []
+      }
+    ]
+  }
+}

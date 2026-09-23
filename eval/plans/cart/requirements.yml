@@ -1,0 +1,21 @@
+requirements:
+  - id: interface
+    text: >-
+      The file src/cart.ts exports a function total(items: { price: number; quantity: number }[],
+      options?: { discountCode?: string }): number.
+  - id: sum
+    text: >-
+      When every item is valid (see validation) and no discount code is given, total returns the
+      sum of price multiplied by quantity over all items, rounded as the rounding requirement says.
+  - id: empty
+    text: total([]) returns 0.
+  - id: discount
+    text: >-
+      With options.discountCode "SAVE10", total takes 10% off the sum. Any other discount code makes
+      total throw an Error. Without a discount code, no discount applies.
+  - id: rounding
+    text: The value total returns is rounded to the nearest cent (2 decimal places).
+  - id: validation
+    text: >-
+      An item whose price is negative, or whose quantity is not a positive integer, makes total
+      throw an Error.

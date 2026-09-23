@@ -1,0 +1,97 @@
+{
+  "id": "cart/test-contradict-empty-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/cart.ts exports a function total(items: { price: number; quantity: number }[], options?: { discountCode?: string }): number."
+      },
+      {
+        "id": "sum",
+        "text": "When every item is valid (see validation) and no discount code is given, total returns the sum of price multiplied by quantity over all items, rounded as the rounding requirement says."
+      },
+      {
+        "id": "empty",
+        "text": "total([]) returns 0."
+      },
+      {
+        "id": "discount",
+        "text": "With options.discountCode \"SAVE10\", total takes 10% off the sum. Any other discount code makes total throw an Error. Without a discount code, no discount applies."
+      },
+      {
+        "id": "rounding",
+        "text": "The value total returns is rounded to the nearest cent (2 decimal places)."
+      },
+      {
+        "id": "validation",
+        "text": "An item whose price is negative, or whose quantity is not a positive integer, makes total throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/cart.test.ts b/tests/cart.test.ts\nindex fbc7497..a198267 100644\n--- a/tests/cart.test.ts\n+++ b/tests/cart.test.ts\n@@ -34,21 +34,21 @@ describe(\"sum\", () => {\n       total([\n         { price: 0, quantity: 5 },\n         { price: 4, quantity: 1 },\n       ]),\n     ).toBe(4);\n   });\n });\n \n describe(\"empty\", () => {\n   it(\"total([]) returns 0\", () => {\n-    expect(total([])).toBe(0);\n+    expect(() => total([])).toThrow(Error);\n   });\n });\n \n describe(\"discount\", () => {\n   it(\"SAVE10 takes 10% off the sum\", () => {\n     expect(total([{ price: 100, quantity: 1 }], { discountCode: \"SAVE10\" })).toBe(90);\n   });\n \n   it(\"SAVE10 applies to the sum over several items\", () => {\n     expect(\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "cart",
+    "requirement": "empty",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"total([]) returns 0.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [
+      {
+        "gate": "weakening",
+        "ruleId": "removed-assertion",
+        "title": "Assertion or test removed",
+        "severity": "warning",
+        "file": "tests/cart.test.ts",
+        "startLine": 44,
+        "endLine": 44,
+        "probability": 0.51,
+        "band": "possible",
+        "route": "human",
+        "message": "Assertion or test removed (p=0.51)"
+      },
+      {
+        "gate": "weakening",
+        "ruleId": "loosened-assertion",
+        "title": "Assertion loosened",
+        "severity": "error",
+        "file": "tests/cart.test.ts",
+        "startLine": 44,
+        "endLine": 44,
+        "probability": 0.44,
+        "band": "possible",
+        "route": "human",
+        "message": "Assertion loosened (p=0.44)"
+      }
+    ],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 974,
+      "outputTokens": 40
+    }
+  }
+}

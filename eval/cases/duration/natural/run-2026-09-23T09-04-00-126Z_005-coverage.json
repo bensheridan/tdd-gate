@@ -1,0 +1,1276 @@
+{
+  "id": "run-2026-09-23T09-04-00-126Z/005-coverage",
+  "kind": "run",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "parseDuration accepts components made of a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), and returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125."
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "coverage",
+    "tests": [
+      {
+        "id": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "file": "tests/duration.test.ts",
+        "name": "[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "line": 5,
+        "code": "    5|   test(\"[interface] parseDuration is an exported function returning a number of seconds\", () => {\n    6|     expect(typeof parseDuration).toBe(\"function\");\n    7|     const result = parseDuration(\"1s\");\n    8|     expect(typeof result).toBe(\"number\");\n    9|     expect(result).toBe(1);\n   10|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "file": "tests/duration.test.ts",
+        "name": "[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "line": 36,
+        "code": "   36|     test(`[units] \"${text}\" is ${expected} seconds`, () => {\n   37|       expect(parseDuration(text)).toBe(expected);\n   38|     });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "line": 43,
+        "code": "   43|   test('[order] \"30m1h\" (m before h) throws an Error', () => {\n   44|     expect(() => parseDuration(\"30m1h\")).toThrow(Error);\n   45|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "line": 46,
+        "code": "   46|   test('[order] \"1h1h\" (repeated h) throws an Error', () => {\n   47|     expect(() => parseDuration(\"1h1h\")).toThrow(Error);\n   48|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "line": 49,
+        "code": "   49|   test('[order] \"1h 30m\" (space between components) throws an Error', () => {\n   50|     expect(() => parseDuration(\"1h 30m\")).toThrow(Error);\n   51|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "line": 52,
+        "code": "   52|   test('[order] \"5s2m\" (s before m) throws an Error', () => {\n   53|     expect(() => parseDuration(\"5s2m\")).toThrow(Error);\n   54|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "line": 55,
+        "code": "   55|   test('[order] \"1s1h\" (s before h) throws an Error', () => {\n   56|     expect(() => parseDuration(\"1s1h\")).toThrow(Error);\n   57|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "line": 58,
+        "code": "   58|   test('[order] \"1m1m\" (repeated m) throws an Error', () => {\n   59|     expect(() => parseDuration(\"1m1m\")).toThrow(Error);\n   60|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "line": 61,
+        "code": "   61|   test('[order] \"2s2s\" (repeated s) throws an Error', () => {\n   62|     expect(() => parseDuration(\"2s2s\")).toThrow(Error);\n   63|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "line": 64,
+        "code": "   64|   test('[order] \"1h2m3s1h\" (h repeated after s) throws an Error', () => {\n   65|     expect(() => parseDuration(\"1h2m3s1h\")).toThrow(Error);\n   66|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "line": 67,
+        "code": "   67|   test('[order] \"1m 5s\" (space between m and s) throws an Error', () => {\n   68|     expect(() => parseDuration(\"1m 5s\")).toThrow(Error);\n   69|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "line": 70,
+        "code": "   70|   test('[order] \"5s1m1h\" (fully reversed order) throws an Error', () => {\n   71|     expect(() => parseDuration(\"5s1m1h\")).toThrow(Error);\n   72|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "line": 73,
+        "code": "   73|   test('[order] \"1h30m 5s\" (space before s component) throws an Error', () => {\n   74|     expect(() => parseDuration(\"1h30m 5s\")).toThrow(Error);\n   75|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "file": "tests/duration.test.ts",
+        "name": "[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "line": 79,
+        "code": "   79|   test('[bare-seconds] \"90\" is 90 seconds', () => {\n   80|     expect(parseDuration(\"90\")).toBe(90);\n   81|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "file": "tests/duration.test.ts",
+        "name": "[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "line": 82,
+        "code": "   82|   test('[bare-seconds] \"0\" is 0 seconds', () => {\n   83|     expect(parseDuration(\"0\")).toBe(0);\n   84|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "file": "tests/duration.test.ts",
+        "name": "[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "line": 85,
+        "code": "   85|   test('[bare-seconds] \"3600\" is 3600 seconds', () => {\n   86|     expect(parseDuration(\"3600\")).toBe(3600);\n   87|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "file": "tests/duration.test.ts",
+        "name": "[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "line": 88,
+        "code": "   88|   test('[bare-seconds] \"1\" is 1 second', () => {\n   89|     expect(parseDuration(\"1\")).toBe(1);\n   90|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "file": "tests/duration.test.ts",
+        "name": "[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "line": 91,
+        "code": "   91|   test('[bare-seconds] \"86400\" is 86400 seconds', () => {\n   92|     expect(parseDuration(\"86400\")).toBe(86400);\n   93|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[empty] empty input > [empty] empty string throws an Error",
+        "line": 97,
+        "code": "   97|   test(\"[empty] empty string throws an Error\", () => {\n   98|     expect(() => parseDuration(\"\")).toThrow(Error);\n   99|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "file": "tests/duration.test.ts",
+        "name": "[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "line": 139,
+        "code": "  139|     test(`[invalid] ${JSON.stringify(text)} (${why}) throws an Error`, () => {\n  140|       expect(() => parseDuration(text)).toThrow(Error);\n  141|     });",
+        "truncated": false
+      }
+    ]
+  },
+  "expect": {},
+  "labelSource": "unlabeled",
+  "recorded": {
+    "requirements": [
+      {
+        "requirementId": "interface",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+            "covers": 0.98,
+            "asserts": 0.74
+          },
+          {
+            "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+            "covers": 0.95,
+            "asserts": 0.84
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+            "covers": 0.95,
+            "asserts": 0.8
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+            "covers": 0.95,
+            "asserts": 0.78
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+            "covers": 0.94,
+            "asserts": 0.76
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+            "covers": 0.94,
+            "asserts": 0.79
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+            "covers": 0.92,
+            "asserts": 0.72
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "units",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+            "covers": 0.94,
+            "asserts": 0.87
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+            "covers": 0.72,
+            "asserts": 0.5
+          }
+        ],
+        "best": 0.94
+      },
+      {
+        "requirementId": "order",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+            "covers": 0.97,
+            "asserts": 0.76
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+            "covers": 0.97,
+            "asserts": 0.78
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+            "covers": 0.96,
+            "asserts": 0.74
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+            "covers": 0.95,
+            "asserts": 0.72
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+            "covers": 0.95,
+            "asserts": 0.72
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+            "covers": 0.95,
+            "asserts": 0.76
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+            "covers": 0.94,
+            "asserts": 0.73
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+            "covers": 0.94,
+            "asserts": 0.73
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+            "covers": 0.93,
+            "asserts": 0.69
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+            "covers": 0.92,
+            "asserts": 0.69
+          },
+          {
+            "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+            "covers": 0.88,
+            "asserts": 0.76
+          }
+        ],
+        "best": 0.97
+      },
+      {
+        "requirementId": "bare-seconds",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+            "covers": 0.98,
+            "asserts": 0.85
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+            "covers": 0.98,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+            "covers": 0.98,
+            "asserts": 0.83
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+            "covers": 0.97,
+            "asserts": 0.83
+          },
+          {
+            "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+            "covers": 0.95,
+            "asserts": 0.73
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "empty",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+            "covers": 0.98,
+            "asserts": 0.91
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "invalid",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+            "covers": 0.95,
+            "asserts": 0.84
+          }
+        ],
+        "best": 0.95
+      }
+    ],
+    "conflicts": [
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "requirementId": "units",
+        "contradicts": 0.88
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "requirementId": "units",
+        "contradicts": 0.84
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "requirementId": "units",
+        "contradicts": 0.89
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "requirementId": "units",
+        "contradicts": 0.89
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "requirementId": "units",
+        "contradicts": 0.88
+      }
+    ],
+    "orphans": [],
+    "pairs": [
+      {
+        "testId": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "requirementId": "interface",
+        "covers": 0.98,
+        "asserts": 0.74,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "requirementId": "units",
+        "covers": 0.69,
+        "asserts": 0.35,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.12,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "requirementId": "bare-seconds",
+        "covers": 0.05,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[interface] parseDuration export > [interface] parseDuration is an exported function returning a number of seconds",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.84,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "requirementId": "units",
+        "covers": 0.94,
+        "asserts": 0.87,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "requirementId": "order",
+        "covers": 0.11,
+        "asserts": 0.29,
+        "contradicts": 0.16
+      },
+      {
+        "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "requirementId": "bare-seconds",
+        "covers": 0.63,
+        "asserts": 0.81,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "requirementId": "empty",
+        "covers": 0.06,
+        "asserts": 0.41,
+        "contradicts": 0.21
+      },
+      {
+        "testId": "tests/duration.test.ts::[units] h/m/s components > [units] \"${text}\" is ${expected} seconds",
+        "requirementId": "invalid",
+        "covers": 0.06,
+        "asserts": 0.26,
+        "contradicts": 0.15
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.22,
+        "asserts": 0.31,
+        "contradicts": 0.5
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "requirementId": "units",
+        "covers": 0.59,
+        "asserts": 0.36,
+        "contradicts": 0.46
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "requirementId": "order",
+        "covers": 0.97,
+        "asserts": 0.76,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"30m1h\" (m before h) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.23,
+        "asserts": 0.52,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.24,
+        "asserts": 0.28,
+        "contradicts": 0.56
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "requirementId": "units",
+        "covers": 0.53,
+        "asserts": 0.31,
+        "contradicts": 0.25
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "requirementId": "order",
+        "covers": 0.97,
+        "asserts": 0.78,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h1h\" (repeated h) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.47,
+        "asserts": 0.58,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.29,
+        "asserts": 0.26,
+        "contradicts": 0.58
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "requirementId": "units",
+        "covers": 0.72,
+        "asserts": 0.5,
+        "contradicts": 0.23
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "requirementId": "order",
+        "covers": 0.96,
+        "asserts": 0.74,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h 30m\" (space between components) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.61,
+        "asserts": 0.63,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.32,
+        "asserts": 0.28,
+        "contradicts": 0.61
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "requirementId": "units",
+        "covers": 0.65,
+        "asserts": 0.41,
+        "contradicts": 0.64
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "requirementId": "order",
+        "covers": 0.92,
+        "asserts": 0.69,
+        "contradicts": 0.18
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s2m\" (s before m) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.3,
+        "asserts": 0.55,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.31,
+        "asserts": 0.3,
+        "contradicts": 0.46
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "requirementId": "units",
+        "covers": 0.65,
+        "asserts": 0.35,
+        "contradicts": 0.38
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "requirementId": "order",
+        "covers": 0.95,
+        "asserts": 0.72,
+        "contradicts": 0.19
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1s1h\" (s before h) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.29,
+        "asserts": 0.58,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.31,
+        "asserts": 0.25,
+        "contradicts": 0.54
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "requirementId": "units",
+        "covers": 0.46,
+        "asserts": 0.27,
+        "contradicts": 0.29
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "requirementId": "order",
+        "covers": 0.95,
+        "asserts": 0.72,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m1m\" (repeated m) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.34,
+        "asserts": 0.49,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.36,
+        "asserts": 0.26,
+        "contradicts": 0.6
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "requirementId": "units",
+        "covers": 0.56,
+        "asserts": 0.29,
+        "contradicts": 0.22
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "requirementId": "order",
+        "covers": 0.94,
+        "asserts": 0.73,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"2s2s\" (repeated s) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.6,
+        "asserts": 0.6,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.27,
+        "asserts": 0.31,
+        "contradicts": 0.52
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "requirementId": "units",
+        "covers": 0.35,
+        "asserts": 0.26,
+        "contradicts": 0.35
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "requirementId": "order",
+        "covers": 0.95,
+        "asserts": 0.76,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h2m3s1h\" (h repeated after s) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.19,
+        "asserts": 0.45,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.31,
+        "asserts": 0.27,
+        "contradicts": 0.55
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "requirementId": "units",
+        "covers": 0.66,
+        "asserts": 0.45,
+        "contradicts": 0.31
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "requirementId": "order",
+        "covers": 0.93,
+        "asserts": 0.69,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1m 5s\" (space between m and s) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.6,
+        "asserts": 0.62,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.23,
+        "asserts": 0.3,
+        "contradicts": 0.66
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "requirementId": "units",
+        "covers": 0.52,
+        "asserts": 0.34,
+        "contradicts": 0.5
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "requirementId": "order",
+        "covers": 0.88,
+        "asserts": 0.76,
+        "contradicts": 0.22
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"5s1m1h\" (fully reversed order) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.12,
+        "asserts": 0.49,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.22,
+        "asserts": 0.27,
+        "contradicts": 0.5
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "requirementId": "units",
+        "covers": 0.33,
+        "asserts": 0.26,
+        "contradicts": 0.29
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "requirementId": "order",
+        "covers": 0.94,
+        "asserts": 0.73,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[order] component order, uniqueness and no spaces > [order] \"1h30m 5s\" (space before s component) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.39,
+        "asserts": 0.61,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.8,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "requirementId": "units",
+        "covers": 0.27,
+        "asserts": 0.35,
+        "contradicts": 0.88
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "requirementId": "bare-seconds",
+        "covers": 0.98,
+        "asserts": 0.85,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"90\" is 90 seconds",
+        "requirementId": "invalid",
+        "covers": 0.05,
+        "asserts": 0.1,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "requirementId": "interface",
+        "covers": 0.92,
+        "asserts": 0.72,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "requirementId": "units",
+        "covers": 0.3,
+        "asserts": 0.31,
+        "contradicts": 0.84
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "requirementId": "order",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "requirementId": "bare-seconds",
+        "covers": 0.95,
+        "asserts": 0.73,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"0\" is 0 seconds",
+        "requirementId": "invalid",
+        "covers": 0.04,
+        "asserts": 0.08,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "requirementId": "interface",
+        "covers": 0.94,
+        "asserts": 0.76,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "requirementId": "units",
+        "covers": 0.25,
+        "asserts": 0.27,
+        "contradicts": 0.89
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "requirementId": "bare-seconds",
+        "covers": 0.98,
+        "asserts": 0.82,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"3600\" is 3600 seconds",
+        "requirementId": "invalid",
+        "covers": 0.05,
+        "asserts": 0.1,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "requirementId": "interface",
+        "covers": 0.94,
+        "asserts": 0.79,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "requirementId": "units",
+        "covers": 0.29,
+        "asserts": 0.4,
+        "contradicts": 0.89
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "requirementId": "bare-seconds",
+        "covers": 0.97,
+        "asserts": 0.83,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"1\" is 1 second",
+        "requirementId": "invalid",
+        "covers": 0.05,
+        "asserts": 0.1,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.78,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "requirementId": "units",
+        "covers": 0.25,
+        "asserts": 0.31,
+        "contradicts": 0.88
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "requirementId": "order",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "requirementId": "bare-seconds",
+        "covers": 0.98,
+        "asserts": 0.83,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::[bare-seconds] integer without a unit > [bare-seconds] \"86400\" is 86400 seconds",
+        "requirementId": "invalid",
+        "covers": 0.06,
+        "asserts": 0.1,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+        "requirementId": "interface",
+        "covers": 0.46,
+        "asserts": 0.36,
+        "contradicts": 0.37
+      },
+      {
+        "testId": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+        "requirementId": "units",
+        "covers": 0.22,
+        "asserts": 0.21,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+        "requirementId": "order",
+        "covers": 0.06,
+        "asserts": 0.13,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+        "requirementId": "empty",
+        "covers": 0.98,
+        "asserts": 0.91,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::[empty] empty input > [empty] empty string throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.41,
+        "asserts": 0.28,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "requirementId": "interface",
+        "covers": 0.33,
+        "asserts": 0.33,
+        "contradicts": 0.16
+      },
+      {
+        "testId": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "requirementId": "units",
+        "covers": 0.19,
+        "asserts": 0.24,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "requirementId": "order",
+        "covers": 0.55,
+        "asserts": 0.67,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "requirementId": "bare-seconds",
+        "covers": 0.05,
+        "asserts": 0.19,
+        "contradicts": 0.35
+      },
+      {
+        "testId": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "requirementId": "empty",
+        "covers": 0.33,
+        "asserts": 0.8,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/duration.test.ts::[invalid] other input > [invalid] ${JSON.stringify(text)} (${why}) throws an Error",
+        "requirementId": "invalid",
+        "covers": 0.95,
+        "asserts": 0.84,
+        "contradicts": 0.06
+      }
+    ],
+    "failures": [],
+    "truncatedTests": [],
+    "usage": {
+      "requests": 20,
+      "questions": 360,
+      "inputTokens": 67310,
+      "outputTokens": 6800
+    }
+  },
+  "meta": {
+    "requirements": "/private/tmp/claude-501/-Users-bensheridan-Documents-GitHub-typesafe/f323b9d7-3bd4-4831-ab1a-82562c6ba89d/scratchpad/evalws/duration/requirements.yml",
+    "testAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep",
+    "codeAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  }
+}

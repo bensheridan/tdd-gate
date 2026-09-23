@@ -1,0 +1,80 @@
+{
+  "id": "slugify/code-bug-trim-drift",
+  "kind": "code-bug",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "drift",
+    "diff": "diff --git a/src/slugify.ts b/src/slugify.ts\nindex 2648a62..f159425 100644\n--- a/src/slugify.ts\n+++ b/src/slugify.ts\n@@ -1,16 +1,16 @@\n export function slugify(title: string, options?: { maxLength?: number }): string {\n   let slug = title\n     .toLowerCase()\n     .replace(/[^\\p{L}\\p{Nd}\\s-]/gu, \"\")\n     .replace(/\\s+/gu, \"-\")\n-    .replace(/^-+|-+$/g, \"\");\n+    .replace(/^-|-$/g, \"\");\n \n   const maxLength = options?.maxLength;\n   if (maxLength !== undefined && slug.length > maxLength) {\n     const truncated = slug.slice(0, Math.max(0, maxLength));\n     const lastHyphen = truncated.lastIndexOf(\"-\");\n     slug = (lastHyphen > 0 ? truncated.slice(0, lastHyphen) : truncated).replace(/-+$/g, \"\");\n   }\n \n   return slug;\n }\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "trim",
+    "asked": "Introduce one realistic bug into the implementation so that this requirement is no longer met for some inputs: \"The string returned by slugify never starts or ends with a hyphen.\". Every other requirement must keep working. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "drift",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 8,
+      "inputTokens": 1905,
+      "outputTokens": 147
+    },
+    "trace": [
+      {
+        "file": "src/slugify.ts",
+        "startLine": 6,
+        "endLine": 6,
+        "requirements": [
+          "trim"
+        ]
+      }
+    ]
+  }
+}

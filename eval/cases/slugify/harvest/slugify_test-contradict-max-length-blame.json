@@ -1,0 +1,319 @@
+{
+  "id": "slugify/test-contradict-max-length-blame",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "blame",
+    "failures": [
+      {
+        "name": "max-length > cuts at the last hyphen, not the first",
+        "classname": "tests/slugify.test.ts",
+        "message": "expected 'the-quick' to be 'the' // Object.is equality\nAssertionError: expected 'the-quick' to be 'the' // Object.is equality\n\nExpected: \"the\"\nReceived: \"the-quick\"\n\n ❯ tests/slugify.test.ts:121:63"
+      }
+    ],
+    "tests": [
+      {
+        "id": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > exports a slugify function from src/slugify.ts",
+        "line": 5,
+        "code": "    5|   it(\"exports a slugify function from src/slugify.ts\", () => {\n    6|     expect(typeof slugify).toBe(\"function\");\n    7|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > accepts a title with no options and returns a string",
+        "line": 9,
+        "code": "    9|   it(\"accepts a title with no options and returns a string\", () => {\n   10|     expect(slugify(\"hello\")).toBe(\"hello\");\n   11|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > accepts an options object with maxLength",
+        "line": 13,
+        "code": "   13|   it(\"accepts an options object with maxLength\", () => {\n   14|     expect(slugify(\"hello\", { maxLength: 10 })).toBe(\"hello\");\n   15|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > accepts an empty options object",
+        "line": 17,
+        "code": "   17|   it(\"accepts an empty options object\", () => {\n   18|     expect(slugify(\"hello\", {})).toBe(\"hello\");\n   19|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "file": "tests/slugify.test.ts",
+        "name": "lowercase > lowercases every letter",
+        "line": 23,
+        "code": "   23|   it(\"lowercases every letter\", () => {\n   24|     expect(slugify(\"HELLO\")).toBe(\"hello\");\n   25|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "file": "tests/slugify.test.ts",
+        "name": "lowercase > lowercases mixed-case input",
+        "line": 27,
+        "code": "   27|   it(\"lowercases mixed-case input\", () => {\n   28|     expect(slugify(\"HeLLo WoRLD\")).toBe(\"hello-world\");\n   29|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "file": "tests/slugify.test.ts",
+        "name": "lowercase > leaves digits unchanged while lowercasing letters",
+        "line": 31,
+        "code": "   31|   it(\"leaves digits unchanged while lowercasing letters\", () => {\n   32|     expect(slugify(\"ABC123\")).toBe(\"abc123\");\n   33|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces a single space with a hyphen",
+        "line": 37,
+        "code": "   37|   it(\"replaces a single space with a hyphen\", () => {\n   38|     expect(slugify(\"hello world\")).toBe(\"hello-world\");\n   39|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces a run of several spaces with a single hyphen",
+        "line": 41,
+        "code": "   41|   it(\"replaces a run of several spaces with a single hyphen\", () => {\n   42|     expect(slugify(\"hello     world\")).toBe(\"hello-world\");\n   43|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces tabs and newlines as whitespace",
+        "line": 45,
+        "code": "   45|   it(\"replaces tabs and newlines as whitespace\", () => {\n   46|     expect(slugify(\"hello\\tworld\\nagain\")).toBe(\"hello-world-again\");\n   47|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "line": 49,
+        "code": "   49|   it(\"replaces a mixed run of whitespace characters with a single hyphen\", () => {\n   50|     expect(slugify(\"hello \\t\\n  world\")).toBe(\"hello-world\");\n   51|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > handles multiple separate whitespace runs",
+        "line": 53,
+        "code": "   53|   it(\"handles multiple separate whitespace runs\", () => {\n   54|     expect(slugify(\"a b  c   d\")).toBe(\"a-b-c-d\");\n   55|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > drops punctuation instead of replacing it",
+        "line": 59,
+        "code": "   59|   it(\"drops punctuation instead of replacing it\", () => {\n   60|     expect(slugify(\"Hello, World!\")).toBe(\"hello-world\");\n   61|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > drops characters between letters without inserting a hyphen",
+        "line": 63,
+        "code": "   63|   it(\"drops characters between letters without inserting a hyphen\", () => {\n   64|     expect(slugify(\"it's\")).toBe(\"its\");\n   65|     expect(slugify(\"a.b\")).toBe(\"ab\");\n   66|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > does not replace symbols with words",
+        "line": 68,
+        "code": "   68|   it(\"does not replace symbols with words\", () => {\n   69|     expect(slugify(\"salt&pepper\")).toBe(\"saltpepper\");\n   70|     expect(slugify(\"50%off\")).toBe(\"50off\");\n   71|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > removes a wide range of symbols",
+        "line": 73,
+        "code": "   73|   it(\"removes a wide range of symbols\", () => {\n   74|     expect(slugify(\"a!@#$%^&*()_+=[]{};:'\\\"<>,./?\\\\|`~b\")).toBe(\"ab\");\n   75|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > keeps letters, digits and hyphens",
+        "line": 77,
+        "code": "   77|   it(\"keeps letters, digits and hyphens\", () => {\n   78|     expect(slugify(\"well-known 2024\")).toBe(\"well-known-2024\");\n   79|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > keeps existing hyphens between words",
+        "line": 81,
+        "code": "   81|   it(\"keeps existing hyphens between words\", () => {\n   82|     expect(slugify(\"state-of-the-art\")).toBe(\"state-of-the-art\");\n   83|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "line": 87,
+        "code": "   87|   it(\"does not start or end with a hyphen when input has surrounding whitespace\", () => {\n   88|     expect(slugify(\"  hello world  \")).toBe(\"hello-world\");\n   89|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "line": 91,
+        "code": "   91|   it(\"does not start or end with a hyphen when input has surrounding hyphens\", () => {\n   92|     expect(slugify(\"-hello-\")).toBe(\"hello\");\n   93|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > does not leave hyphens when surrounding punctuation is stripped",
+        "line": 95,
+        "code": "   95|   it(\"does not leave hyphens when surrounding punctuation is stripped\", () => {\n   96|     expect(slugify(\"! hello world ?\")).toBe(\"hello-world\");\n   97|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "line": 99,
+        "code": "   99|   it(\"trims leading whitespace and trailing hyphens, and vice versa\", () => {\n  100|     expect(slugify(\"  hello--\")).toBe(\"hello\");\n  101|     expect(slugify(\"--hello  \")).toBe(\"hello\");\n  102|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > returns the slug unchanged when it fits within maxLength",
+        "line": 106,
+        "code": "  106|   it(\"returns the slug unchanged when it fits within maxLength\", () => {\n  107|     expect(slugify(\"hello world\", { maxLength: 20 })).toBe(\"hello-world\");\n  108|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > returns the slug unchanged when its length equals maxLength",
+        "line": 110,
+        "code": "  110|   it(\"returns the slug unchanged when its length equals maxLength\", () => {\n  111|     expect(slugify(\"hello world\", { maxLength: 11 })).toBe(\"hello-world\");\n  112|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > cuts at the last hyphen before the limit",
+        "line": 114,
+        "code": "  114|   it(\"cuts at the last hyphen before the limit\", () => {\n  115|     // \"hello-world-foo\" (15 chars); first 13 chars are \"hello-world-f\"\n  116|     expect(slugify(\"hello world foo\", { maxLength: 13 })).toBe(\"hello-world\");\n  117|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > cuts at the last hyphen, not the first",
+        "line": 119,
+        "code": "  119|   it(\"cuts at the last hyphen, not the first\", () => {\n  120|     // \"the-quick-brown-fox\"; first 12 chars are \"the-quick-br\"\n  121|     expect(slugify(\"The quick brown fox\", { maxLength: 12 })).toBe(\"the\");\n  122|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > cuts at exactly maxLength when there is no hyphen",
+        "line": 124,
+        "code": "  124|   it(\"cuts at exactly maxLength when there is no hyphen\", () => {\n  125|     expect(slugify(\"abcdefghij\", { maxLength: 5 })).toBe(\"abcde\");\n  126|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > never returns more than maxLength characters",
+        "line": 128,
+        "code": "  128|   it(\"never returns more than maxLength characters\", () => {\n  129|     const title = \"The Quick Brown Fox Jumps Over The Lazy Dog\";\n  130|     for (let max = 1; max <= 50; max++) {\n  131|       expect(slugify(title, { maxLength: max }).length).toBeLessThanOrEqual(max);\n  132|     }\n  133|   });",
+        "truncated": false
+      }
+    ],
+    "codeDiff": "diff --git a/src/slugify.ts b/src/slugify.ts\nnew file mode 100644\nindex 0000000..2648a62\n--- /dev/null\n+++ b/src/slugify.ts\n@@ -0,0 +1,16 @@\n+export function slugify(title: string, options?: { maxLength?: number }): string {\n+  let slug = title\n+    .toLowerCase()\n+    .replace(/[^\\p{L}\\p{Nd}\\s-]/gu, \"\")\n+    .replace(/\\s+/gu, \"-\")\n+    .replace(/^-+|-+$/g, \"\");\n+\n+  const maxLength = options?.maxLength;\n+  if (maxLength !== undefined && slug.length > maxLength) {\n+    const truncated = slug.slice(0, Math.max(0, maxLength));\n+    const lastHyphen = truncated.lastIndexOf(\"-\");\n+    slug = (lastHyphen > 0 ? truncated.slice(0, lastHyphen) : truncated).replace(/-+$/g, \"\");\n+  }\n+\n+  return slug;\n+}\ndiff --git a/tests/slugify.test.ts b/tests/slugify.test.ts\nnew file mode 100644\nindex 0000000..30e249c\n--- /dev/null\n+++ b/tests/slugify.test.ts\n@@ -0,0 +1,134 @@\n+import { describe, it, expect } from \"vitest\";\n+import { slugify } from \"../src/slugify\";\n+\n+describe(\"interface\", () => {\n+  it(\"exports a slugify function from src/slugify.ts\", () => {\n+    expect(typeof slugify).toBe(\"function\");\n+  });\n+\n+  it(\"accepts a title with no options and returns a string\", () => {\n+    expect(slugify(\"hello\")).toBe(\"hello\");\n+  });\n+\n+  it(\"accepts an options object with maxLength\", () => {\n+    expect(slugify(\"hello\", { maxLength: 10 })).toBe(\"hello\");\n+  });\n+\n+  it(\"accepts an empty options object\", () => {\n+    expect(slugify(\"hello\", {})).toBe(\"hello\");\n+  });\n+});\n+\n+describe(\"lowercase\", () => {\n+  it(\"lowercases every letter\", () => {\n+    expect(slugify(\"HELLO\")).toBe(\"hello\");\n+  });\n+\n+  it(\"lowercases mixed-case input\", () => {\n+    expect(slugify(\"HeLLo WoRLD\")).toBe(\"hello-world\");\n+  });\n+\n+  it(\"leaves digits unchanged while lowercasing letters\", () => {\n+    expect(slugify(\"ABC123\")).toBe(\"abc123\");\n+  });\n+});\n+\n+describe(\"whitespace\", () => {\n+  it(\"replaces a single space with a hyphen\", () => {\n+    expect(slugify(\"hello world\")).toBe(\"hello-world\");\n+  });\n+\n+  it(\"replaces a run of several spaces with a single hyphen\", () => {\n+    expect(slugify(\"hello     world\")).toBe(\"hello-world\");\n+  });\n+\n+  it(\"replaces tabs and newlines as whitespace\", () => {\n+    expect(slugify(\"hello\\tworld\\nagain\")).toBe(\"hello-world-again\");\n+  });\n+\n+  it(\"replaces a mixed run of whitespace characters with a single hyphen\", () => {\n+    expect(slugify(\"hello \\t\\n  world\")).toBe(\"hello-world\");\n+  });\n+\n+  it(\"handles multiple separate whitespace runs\", () => {\n+    expect(slugify(\"a b  c   d\")).toBe(\"a-b-c-d\");\n+  });\n+});\n+\n+describe(\"strip\", () => {\n+  it(\"drops punctuation instead of replacing it\", () => {\n+    expect(slugify(\"Hello, World!\")).toBe(\"hello-world\");\n+  });\n+\n+  it(\"drops characters between letters without inserting a hyphen\", () => {\n+    expect(slugify(\"it's\")).toBe(\"its\");\n+    expect(slugify(\"a.b\")).toBe(\"ab\");\n+  });\n+\n+  it(\"does not replace symbols with words\", () => {\n+    expect(slugify(\"salt&pepper\")).toBe(\"saltpepper\");\n+    expect(slugify(\"50%off\")).toBe(\"50off\");\n+  });\n+\n+  it(\"removes a wide range of symbols\", () => {\n+    expect(slugify(\"a!@#$%^&*()_+=[]{};:'\\\"<>,./?\\\\|`~b\")).toBe(\"ab\");\n+  });\n+\n+  it(\"keeps letters, digits and hyphens\", () => {\n+    expect(slugify(\"well-known 2024\")).toBe(\"well-known-2024\");\n+  });\n+\n+  it(\"keeps existing hyphens between words\", () => {\n+    expect(slugify(\"state-of-the-art\")).toBe(\"state-of-the-art\");\n+  });\n+});\n+\n+describe(\"trim\", () => {\n+  it(\"does not start or end with a hyphen when input has surrounding whitespace\", () => {\n+    expect(slugify(\"  hello world  \")).toBe(\"hello-world\");\n+  });\n+\n+  it(\"does not start or end with a hyphen when input has surrounding hyphens\", () => {\n+    expect(slugify(\"-hello-\")).toBe(\"hello\");\n+  });\n+\n+  it(\"does not leave hyphens when surrounding punctuation is stripped\", () => {\n+    expect(slugify(\"! hello world ?\")).toBe(\"hello-world\");\n+  });\n+\n+  it(\"trims leading whitespace and trailing hyphens, and vice versa\", () => {\n+    expect(slugify(\"  hello--\")).toBe(\"hello\");\n+    expect(slugify(\"--hello  \")).toBe(\"hello\");\n+  });\n+});\n+\n+describe(\"max-length\", () => {\n+  it(\"returns the slug unchanged when it fits within maxLength\", () => {\n+    expect(slugify(\"hello world\", { maxLength: 20 })).toBe(\"hello-world\");\n+  });\n+\n+  it(\"returns the slug unchanged when its length equals maxLength\", () => {\n+    expect(slugify(\"hello world\", { maxLength: 11 })).toBe(\"hello-world\");\n+  });\n+\n+  it(\"cuts at the last hyphen before the limit\", () => {\n+    // \"hello-world-foo\" (15 chars); first 13 chars are \"hello-world-f\"\n+    expect(slugify(\"hello world foo\", { maxLength: 13 })).toBe(\"hello-world\");\n+  });\n+\n+  it(\"cuts at the last hyphen, not the first\", () => {\n+    // \"the-quick-brown-fox\"; first 12 chars are \"the-quick-br\"\n+    expect(slugify(\"The quick brown fox\", { maxLength: 12 })).toBe(\"the\");\n+  });\n+\n+  it(\"cuts at exactly maxLength when there is no hyphen\", () => {\n+    expect(slugify(\"abcdefghij\", { maxLength: 5 })).toBe(\"abcde\");\n+  });\n+\n+  it(\"never returns more than maxLength characters\", () => {\n+    const title = \"The Quick Brown Fox Jumps Over The Lazy Dog\";\n+    for (let max = 1; max <= 50; max++) {\n+      expect(slugify(title, { maxLength: max }).length).toBeLessThanOrEqual(max);\n+    }\n+  });\n+});\n"
+  },
+  "expect": {
+    "route": "test-agent",
+    "verdict": "test_wrong"
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "max-length",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "blames": [
+      {
+        "failure": "max-length > cuts at the last hyphen, not the first",
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "requirementId": "max-length",
+        "requirementP": 0.96,
+        "hunk": {
+          "file": "src/slugify.ts",
+          "startLine": 1,
+          "endLine": 16
+        },
+        "verdict": "code_wrong",
+        "confidence": 0.72,
+        "probabilities": {
+          "test_wrong": 0.17,
+          "code_wrong": 0.79,
+          "ambiguous": 0.02,
+          "setup_error": 0.01
+        },
+        "route": "code-agent",
+        "reason": "The test's expectation matches `requirement`, and `code` does not do what `requirement` says (or `code` is missing)."
+      }
+    ],
+    "failures": [],
+    "usage": {
+      "requests": 2,
+      "questions": 14,
+      "inputTokens": 3775,
+      "outputTokens": 314
+    }
+  }
+}

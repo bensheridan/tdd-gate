@@ -1,0 +1,1780 @@
+{
+  "id": "run-2026-09-23T09-11-50-785Z/002-coverage",
+  "kind": "run",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)"
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "coverage",
+    "tests": [
+      {
+        "id": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "file": "tests/duration.test.ts",
+        "name": "interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "line": 5,
+        "code": "    5|   it(\"[interface] src/duration.ts exports parseDuration returning seconds as a number\", () => {\n    6|     expect(typeof parseDuration).toBe(\"function\");\n    7|     const result = parseDuration(\"1h\");\n    8|     expect(typeof result).toBe(\"number\");\n    9|     expect(result).toBe(3600);\n   10|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"1h30m\" is 5400",
+        "line": 14,
+        "code": "   14|   it('[units] \"1h30m\" is 5400', () => {\n   15|     expect(parseDuration(\"1h30m\")).toBe(5400);\n   16|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"2m5s\" is 125",
+        "line": 18,
+        "code": "   18|   it('[units] \"2m5s\" is 125', () => {\n   19|     expect(parseDuration(\"2m5s\")).toBe(125);\n   20|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"1h\" is 3600",
+        "line": 22,
+        "code": "   22|   it('[units] \"1h\" is 3600', () => {\n   23|     expect(parseDuration(\"1h\")).toBe(3600);\n   24|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"1m\" is 60",
+        "line": 26,
+        "code": "   26|   it('[units] \"1m\" is 60', () => {\n   27|     expect(parseDuration(\"1m\")).toBe(60);\n   28|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"1s\" is 1",
+        "line": 30,
+        "code": "   30|   it('[units] \"1s\" is 1', () => {\n   31|     expect(parseDuration(\"1s\")).toBe(1);\n   32|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"0s\" is 0",
+        "line": 34,
+        "code": "   34|   it('[units] \"0s\" is 0', () => {\n   35|     expect(parseDuration(\"0s\")).toBe(0);\n   36|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"1h2m3s\" is 3723",
+        "line": 38,
+        "code": "   38|   it('[units] \"1h2m3s\" is 3723', () => {\n   39|     expect(parseDuration(\"1h2m3s\")).toBe(3723);\n   40|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"1h5s\" is 3605",
+        "line": 42,
+        "code": "   42|   it('[units] \"1h5s\" is 3605', () => {\n   43|     expect(parseDuration(\"1h5s\")).toBe(3605);\n   44|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"90m\" is 5400",
+        "line": 46,
+        "code": "   46|   it('[units] \"90m\" is 5400', () => {\n   47|     expect(parseDuration(\"90m\")).toBe(5400);\n   48|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+        "file": "tests/duration.test.ts",
+        "name": "units > [units] \"10h\" is 36000",
+        "line": 50,
+        "code": "   50|   it('[units] \"10h\" is 36000', () => {\n   51|     expect(parseDuration(\"10h\")).toBe(36000);\n   52|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \"30m1h\" throws (m before h)",
+        "line": 56,
+        "code": "   56|   it('[order] \"30m1h\" throws (m before h)', () => {\n   57|     expect(() => parseDuration(\"30m1h\")).toThrow(Error);\n   58|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \"1h1h\" throws (repeated unit)",
+        "line": 60,
+        "code": "   60|   it('[order] \"1h1h\" throws (repeated unit)', () => {\n   61|     expect(() => parseDuration(\"1h1h\")).toThrow(Error);\n   62|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \"1h 30m\" throws (space)",
+        "line": 64,
+        "code": "   64|   it('[order] \"1h 30m\" throws (space)', () => {\n   65|     expect(() => parseDuration(\"1h 30m\")).toThrow(Error);\n   66|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \"5s2m\" throws (s before m)",
+        "line": 68,
+        "code": "   68|   it('[order] \"5s2m\" throws (s before m)', () => {\n   69|     expect(() => parseDuration(\"5s2m\")).toThrow(Error);\n   70|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \"1s1h\" throws (s before h)",
+        "line": 72,
+        "code": "   72|   it('[order] \"1s1h\" throws (s before h)', () => {\n   73|     expect(() => parseDuration(\"1s1h\")).toThrow(Error);\n   74|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \"2m2m\" throws (repeated m)",
+        "line": 76,
+        "code": "   76|   it('[order] \"2m2m\" throws (repeated m)', () => {\n   77|     expect(() => parseDuration(\"2m2m\")).toThrow(Error);\n   78|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \"3s3s\" throws (repeated s)",
+        "line": 80,
+        "code": "   80|   it('[order] \"3s3s\" throws (repeated s)', () => {\n   81|     expect(() => parseDuration(\"3s3s\")).toThrow(Error);\n   82|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "file": "tests/duration.test.ts",
+        "name": "order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "line": 84,
+        "code": "   84|   it('[order] \" 1h\" and \"1h \" throw (surrounding spaces)', () => {\n   85|     expect(() => parseDuration(\" 1h\")).toThrow(Error);\n   86|     expect(() => parseDuration(\"1h \")).toThrow(Error);\n   87|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+        "file": "tests/duration.test.ts",
+        "name": "bare-seconds > [bare-seconds] \"90\" is 90",
+        "line": 91,
+        "code": "   91|   it('[bare-seconds] \"90\" is 90', () => {\n   92|     expect(parseDuration(\"90\")).toBe(90);\n   93|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+        "file": "tests/duration.test.ts",
+        "name": "bare-seconds > [bare-seconds] \"0\" is 0",
+        "line": 95,
+        "code": "   95|   it('[bare-seconds] \"0\" is 0', () => {\n   96|     expect(parseDuration(\"0\")).toBe(0);\n   97|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "file": "tests/duration.test.ts",
+        "name": "bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "line": 99,
+        "code": "   99|   it('[bare-seconds] \"3600\" is 3600', () => {\n  100|     expect(parseDuration(\"3600\")).toBe(3600);\n  101|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::empty > [empty] an empty string throws",
+        "file": "tests/duration.test.ts",
+        "name": "empty > [empty] an empty string throws",
+        "line": 105,
+        "code": "  105|   it(\"[empty] an empty string throws\", () => {\n  106|     expect(() => parseDuration(\"\")).toThrow(Error);\n  107|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "file": "tests/duration.test.ts",
+        "name": "invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "line": 111,
+        "code": "  111|   it('[invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw', () => {\n  112|     expect(() => parseDuration(\"1d\")).toThrow(Error);\n  113|     expect(() => parseDuration(\"5x\")).toThrow(Error);\n  114|     expect(() => parseDuration(\"1H\")).toThrow(Error);\n  115|     expect(() => parseDuration(\"1ms\")).toThrow(Error);\n  116|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "file": "tests/duration.test.ts",
+        "name": "invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "line": 118,
+        "code": "  118|   it('[invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw', () => {\n  119|     expect(() => parseDuration(\"-5\")).toThrow(Error);\n  120|     expect(() => parseDuration(\"+5\")).toThrow(Error);\n  121|     expect(() => parseDuration(\"-1h\")).toThrow(Error);\n  122|     expect(() => parseDuration(\"+1m\")).toThrow(Error);\n  123|     expect(() => parseDuration(\"1h-30m\")).toThrow(Error);\n  124|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "file": "tests/duration.test.ts",
+        "name": "invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "line": 126,
+        "code": "  126|   it('[invalid] decimal points \"1.5h\", \"1.5\" throw', () => {\n  127|     expect(() => parseDuration(\"1.5h\")).toThrow(Error);\n  128|     expect(() => parseDuration(\"1.5\")).toThrow(Error);\n  129|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+        "file": "tests/duration.test.ts",
+        "name": "invalid > [invalid] letters \"abc\", \"h\" throw",
+        "line": 131,
+        "code": "  131|   it('[invalid] letters \"abc\", \"h\" throw', () => {\n  132|     expect(() => parseDuration(\"abc\")).toThrow(Error);\n  133|     expect(() => parseDuration(\"h\")).toThrow(Error);\n  134|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "file": "tests/duration.test.ts",
+        "name": "invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "line": 136,
+        "code": "  136|   it('[invalid] other characters \"1_000\", \"1,5s\" throw', () => {\n  137|     expect(() => parseDuration(\"1_000\")).toThrow(Error);\n  138|     expect(() => parseDuration(\"1,5s\")).toThrow(Error);\n  139|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "file": "tests/duration.test.ts",
+        "name": "invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "line": 141,
+        "code": "  141|   it('[invalid] a trailing number without a unit after a component \"1h30\" throws', () => {\n  142|     expect(() => parseDuration(\"1h30\")).toThrow(Error);\n  143|   });",
+        "truncated": false
+      }
+    ]
+  },
+  "expect": {},
+  "labelSource": "unlabeled",
+  "recorded": {
+    "requirements": [
+      {
+        "requirementId": "interface",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+            "covers": 0.98,
+            "asserts": 0.83
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+            "covers": 0.96,
+            "asserts": 0.83
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+            "covers": 0.96,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+            "covers": 0.96,
+            "asserts": 0.84
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+            "covers": 0.96,
+            "asserts": 0.85
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+            "covers": 0.95,
+            "asserts": 0.83
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+            "covers": 0.95,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+            "covers": 0.95,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+            "covers": 0.95,
+            "asserts": 0.79
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+            "covers": 0.95,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+            "covers": 0.95,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+            "covers": 0.94,
+            "asserts": 0.8
+          },
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+            "covers": 0.93,
+            "asserts": 0.74
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+            "covers": 0.92,
+            "asserts": 0.79
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "units",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+            "covers": 0.97,
+            "asserts": 0.77
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+            "covers": 0.97,
+            "asserts": 0.78
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+            "covers": 0.96,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+            "covers": 0.94,
+            "asserts": 0.76
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+            "covers": 0.83,
+            "asserts": 0.67
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+            "covers": 0.82,
+            "asserts": 0.71
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+            "covers": 0.8,
+            "asserts": 0.7
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+            "covers": 0.78,
+            "asserts": 0.6
+          },
+          {
+            "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+            "covers": 0.75,
+            "asserts": 0.43
+          },
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+            "covers": 0.75,
+            "asserts": 0.53
+          },
+          {
+            "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+            "covers": 0.72,
+            "asserts": 0.47
+          },
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+            "covers": 0.71,
+            "asserts": 0.45
+          }
+        ],
+        "best": 0.97
+      },
+      {
+        "requirementId": "order",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+            "covers": 0.97,
+            "asserts": 0.76
+          },
+          {
+            "testId": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+            "covers": 0.96,
+            "asserts": 0.77
+          },
+          {
+            "testId": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+            "covers": 0.96,
+            "asserts": 0.75
+          },
+          {
+            "testId": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+            "covers": 0.93,
+            "asserts": 0.67
+          },
+          {
+            "testId": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+            "covers": 0.93,
+            "asserts": 0.74
+          },
+          {
+            "testId": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+            "covers": 0.92,
+            "asserts": 0.67
+          },
+          {
+            "testId": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+            "covers": 0.91,
+            "asserts": 0.72
+          }
+        ],
+        "best": 0.97
+      },
+      {
+        "requirementId": "bare-seconds",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+            "covers": 0.98,
+            "asserts": 0.85
+          },
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+            "covers": 0.97,
+            "asserts": 0.83
+          },
+          {
+            "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+            "covers": 0.94,
+            "asserts": 0.75
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "empty",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::empty > [empty] an empty string throws",
+            "covers": 0.98,
+            "asserts": 0.92
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "invalid",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+            "covers": 0.93,
+            "asserts": 0.73
+          },
+          {
+            "testId": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+            "covers": 0.92,
+            "asserts": 0.78
+          },
+          {
+            "testId": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+            "covers": 0.91,
+            "asserts": 0.7
+          },
+          {
+            "testId": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+            "covers": 0.9,
+            "asserts": 0.74
+          },
+          {
+            "testId": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+            "covers": 0.9,
+            "asserts": 0.75
+          },
+          {
+            "testId": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+            "covers": 0.71,
+            "asserts": 0.67
+          }
+        ],
+        "best": 0.93
+      }
+    ],
+    "conflicts": [],
+    "orphans": [],
+    "pairs": [
+      {
+        "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "requirementId": "interface",
+        "covers": 0.98,
+        "asserts": 0.83,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "requirementId": "units",
+        "covers": 0.75,
+        "asserts": 0.43,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.13,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "requirementId": "bare-seconds",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::interface > [interface] src/duration.ts exports parseDuration returning seconds as a number",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.11,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.83,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+        "requirementId": "units",
+        "covers": 0.97,
+        "asserts": 0.77,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+        "requirementId": "order",
+        "covers": 0.14,
+        "asserts": 0.19,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h30m\" is 5400",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+        "requirementId": "interface",
+        "covers": 0.96,
+        "asserts": 0.83,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+        "requirementId": "units",
+        "covers": 0.97,
+        "asserts": 0.78,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+        "requirementId": "order",
+        "covers": 0.1,
+        "asserts": 0.16,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+        "requirementId": "bare-seconds",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"2m5s\" is 125",
+        "requirementId": "invalid",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.81,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+        "requirementId": "units",
+        "covers": 0.8,
+        "asserts": 0.7,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+        "requirementId": "order",
+        "covers": 0.05,
+        "asserts": 0.14,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.06,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h\" is 3600",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.81,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+        "requirementId": "units",
+        "covers": 0.78,
+        "asserts": 0.6,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+        "requirementId": "order",
+        "covers": 0.05,
+        "asserts": 0.16,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+        "requirementId": "bare-seconds",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1m\" is 60",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+        "requirementId": "interface",
+        "covers": 0.96,
+        "asserts": 0.81,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+        "requirementId": "units",
+        "covers": 0.72,
+        "asserts": 0.47,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+        "requirementId": "order",
+        "covers": 0.04,
+        "asserts": 0.12,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+        "requirementId": "bare-seconds",
+        "covers": 0.05,
+        "asserts": 0.11,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1s\" is 1",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+        "requirementId": "interface",
+        "covers": 0.92,
+        "asserts": 0.79,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+        "requirementId": "units",
+        "covers": 0.62,
+        "asserts": 0.33,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+        "requirementId": "bare-seconds",
+        "covers": 0.06,
+        "asserts": 0.11,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"0s\" is 0",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+        "requirementId": "interface",
+        "covers": 0.96,
+        "asserts": 0.84,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+        "requirementId": "units",
+        "covers": 0.96,
+        "asserts": 0.81,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+        "requirementId": "order",
+        "covers": 0.21,
+        "asserts": 0.22,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h2m3s\" is 3723",
+        "requirementId": "invalid",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+        "requirementId": "interface",
+        "covers": 0.96,
+        "asserts": 0.85,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+        "requirementId": "units",
+        "covers": 0.94,
+        "asserts": 0.76,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+        "requirementId": "order",
+        "covers": 0.15,
+        "asserts": 0.18,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"1h5s\" is 3605",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.79,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+        "requirementId": "units",
+        "covers": 0.83,
+        "asserts": 0.67,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+        "requirementId": "order",
+        "covers": 0.05,
+        "asserts": 0.15,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"90m\" is 5400",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.82,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+        "requirementId": "units",
+        "covers": 0.82,
+        "asserts": 0.71,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+        "requirementId": "order",
+        "covers": 0.04,
+        "asserts": 0.14,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.07,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::units > [units] \"10h\" is 36000",
+        "requirementId": "invalid",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+        "requirementId": "interface",
+        "covers": 0.25,
+        "asserts": 0.31,
+        "contradicts": 0.55
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+        "requirementId": "units",
+        "covers": 0.39,
+        "asserts": 0.19,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+        "requirementId": "order",
+        "covers": 0.97,
+        "asserts": 0.76,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"30m1h\" throws (m before h)",
+        "requirementId": "invalid",
+        "covers": 0.29,
+        "asserts": 0.54,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+        "requirementId": "interface",
+        "covers": 0.28,
+        "asserts": 0.3,
+        "contradicts": 0.33
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+        "requirementId": "units",
+        "covers": 0.12,
+        "asserts": 0.11,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+        "requirementId": "order",
+        "covers": 0.96,
+        "asserts": 0.77,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h1h\" throws (repeated unit)",
+        "requirementId": "invalid",
+        "covers": 0.39,
+        "asserts": 0.57,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+        "requirementId": "interface",
+        "covers": 0.28,
+        "asserts": 0.3,
+        "contradicts": 0.62
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+        "requirementId": "units",
+        "covers": 0.2,
+        "asserts": 0.27,
+        "contradicts": 0.36
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+        "requirementId": "order",
+        "covers": 0.96,
+        "asserts": 0.75,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1h 30m\" throws (space)",
+        "requirementId": "invalid",
+        "covers": 0.6,
+        "asserts": 0.65,
+        "contradicts": 0.26
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+        "requirementId": "interface",
+        "covers": 0.29,
+        "asserts": 0.31,
+        "contradicts": 0.56
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+        "requirementId": "units",
+        "covers": 0.27,
+        "asserts": 0.13,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+        "requirementId": "order",
+        "covers": 0.93,
+        "asserts": 0.67,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"5s2m\" throws (s before m)",
+        "requirementId": "invalid",
+        "covers": 0.25,
+        "asserts": 0.53,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+        "requirementId": "interface",
+        "covers": 0.32,
+        "asserts": 0.25,
+        "contradicts": 0.57
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+        "requirementId": "units",
+        "covers": 0.32,
+        "asserts": 0.14,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+        "requirementId": "order",
+        "covers": 0.92,
+        "asserts": 0.67,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"1s1h\" throws (s before h)",
+        "requirementId": "invalid",
+        "covers": 0.32,
+        "asserts": 0.59,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+        "requirementId": "interface",
+        "covers": 0.33,
+        "asserts": 0.3,
+        "contradicts": 0.38
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+        "requirementId": "units",
+        "covers": 0.14,
+        "asserts": 0.14,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+        "requirementId": "order",
+        "covers": 0.93,
+        "asserts": 0.74,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"2m2m\" throws (repeated m)",
+        "requirementId": "invalid",
+        "covers": 0.44,
+        "asserts": 0.54,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+        "requirementId": "interface",
+        "covers": 0.39,
+        "asserts": 0.26,
+        "contradicts": 0.48
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+        "requirementId": "units",
+        "covers": 0.11,
+        "asserts": 0.12,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+        "requirementId": "order",
+        "covers": 0.91,
+        "asserts": 0.72,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \"3s3s\" throws (repeated s)",
+        "requirementId": "invalid",
+        "covers": 0.61,
+        "asserts": 0.66,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "requirementId": "interface",
+        "covers": 0.35,
+        "asserts": 0.28,
+        "contradicts": 0.29
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "requirementId": "units",
+        "covers": 0.06,
+        "asserts": 0.08,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "requirementId": "order",
+        "covers": 0.32,
+        "asserts": 0.47,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::order > [order] \" 1h\" and \"1h \" throw (surrounding spaces)",
+        "requirementId": "invalid",
+        "covers": 0.4,
+        "asserts": 0.5,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.82,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+        "requirementId": "units",
+        "covers": 0.63,
+        "asserts": 0.36,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+        "requirementId": "order",
+        "covers": 0.03,
+        "asserts": 0.12,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+        "requirementId": "bare-seconds",
+        "covers": 0.98,
+        "asserts": 0.85,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"90\" is 90",
+        "requirementId": "invalid",
+        "covers": 0.04,
+        "asserts": 0.1,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+        "requirementId": "interface",
+        "covers": 0.93,
+        "asserts": 0.74,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+        "requirementId": "units",
+        "covers": 0.71,
+        "asserts": 0.45,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+        "requirementId": "order",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+        "requirementId": "bare-seconds",
+        "covers": 0.94,
+        "asserts": 0.75,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"0\" is 0",
+        "requirementId": "invalid",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "requirementId": "interface",
+        "covers": 0.94,
+        "asserts": 0.8,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "requirementId": "units",
+        "covers": 0.75,
+        "asserts": 0.53,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "requirementId": "order",
+        "covers": 0.04,
+        "asserts": 0.12,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "requirementId": "bare-seconds",
+        "covers": 0.97,
+        "asserts": 0.83,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/duration.test.ts::bare-seconds > [bare-seconds] \"3600\" is 3600",
+        "requirementId": "invalid",
+        "covers": 0.04,
+        "asserts": 0.1,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > [empty] an empty string throws",
+        "requirementId": "interface",
+        "covers": 0.45,
+        "asserts": 0.39,
+        "contradicts": 0.24
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > [empty] an empty string throws",
+        "requirementId": "units",
+        "covers": 0.04,
+        "asserts": 0.08,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > [empty] an empty string throws",
+        "requirementId": "order",
+        "covers": 0.09,
+        "asserts": 0.13,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > [empty] an empty string throws",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > [empty] an empty string throws",
+        "requirementId": "empty",
+        "covers": 0.98,
+        "asserts": 0.92,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/duration.test.ts::empty > [empty] an empty string throws",
+        "requirementId": "invalid",
+        "covers": 0.46,
+        "asserts": 0.34,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "requirementId": "interface",
+        "covers": 0.29,
+        "asserts": 0.3,
+        "contradicts": 0.24
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "requirementId": "units",
+        "covers": 0.04,
+        "asserts": 0.1,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "requirementId": "order",
+        "covers": 0.05,
+        "asserts": 0.11,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "requirementId": "bare-seconds",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] unknown units \"1d\", \"5x\", \"1H\", \"1ms\" throw",
+        "requirementId": "invalid",
+        "covers": 0.9,
+        "asserts": 0.74,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "requirementId": "interface",
+        "covers": 0.46,
+        "asserts": 0.35,
+        "contradicts": 0.19
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "requirementId": "units",
+        "covers": 0.09,
+        "asserts": 0.13,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "requirementId": "order",
+        "covers": 0.11,
+        "asserts": 0.3,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "requirementId": "bare-seconds",
+        "covers": 0.05,
+        "asserts": 0.11,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] signs \"-5\", \"+5\", \"-1h\", \"+1m\", \"1h-30m\" throw",
+        "requirementId": "invalid",
+        "covers": 0.9,
+        "asserts": 0.75,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "requirementId": "interface",
+        "covers": 0.36,
+        "asserts": 0.3,
+        "contradicts": 0.36
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "requirementId": "units",
+        "covers": 0.1,
+        "asserts": 0.12,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "requirementId": "order",
+        "covers": 0.05,
+        "asserts": 0.11,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "requirementId": "bare-seconds",
+        "covers": 0.09,
+        "asserts": 0.28,
+        "contradicts": 0.58
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] decimal points \"1.5h\", \"1.5\" throw",
+        "requirementId": "invalid",
+        "covers": 0.93,
+        "asserts": 0.73,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+        "requirementId": "interface",
+        "covers": 0.47,
+        "asserts": 0.32,
+        "contradicts": 0.22
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+        "requirementId": "units",
+        "covers": 0.07,
+        "asserts": 0.12,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+        "requirementId": "order",
+        "covers": 0.18,
+        "asserts": 0.28,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+        "requirementId": "empty",
+        "covers": 0.04,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] letters \"abc\", \"h\" throw",
+        "requirementId": "invalid",
+        "covers": 0.91,
+        "asserts": 0.7,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "requirementId": "interface",
+        "covers": 0.45,
+        "asserts": 0.32,
+        "contradicts": 0.22
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "requirementId": "units",
+        "covers": 0.05,
+        "asserts": 0.09,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "requirementId": "order",
+        "covers": 0.08,
+        "asserts": 0.17,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "requirementId": "bare-seconds",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] other characters \"1_000\", \"1,5s\" throw",
+        "requirementId": "invalid",
+        "covers": 0.92,
+        "asserts": 0.78,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "requirementId": "interface",
+        "covers": 0.3,
+        "asserts": 0.33,
+        "contradicts": 0.67
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "requirementId": "units",
+        "covers": 0.22,
+        "asserts": 0.18,
+        "contradicts": 0.34
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "requirementId": "order",
+        "covers": 0.27,
+        "asserts": 0.35,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "requirementId": "bare-seconds",
+        "covers": 0.05,
+        "asserts": 0.1,
+        "contradicts": 0.15
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/duration.test.ts::invalid > [invalid] a trailing number without a unit after a component \"1h30\" throws",
+        "requirementId": "invalid",
+        "covers": 0.71,
+        "asserts": 0.67,
+        "contradicts": 0.18
+      }
+    ],
+    "failures": [],
+    "truncatedTests": [],
+    "usage": {
+      "requests": 29,
+      "questions": 522,
+      "inputTokens": 99787,
+      "outputTokens": 9860
+    }
+  },
+  "meta": {
+    "requirements": "/private/tmp/claude-501/-Users-bensheridan-Documents-GitHub-typesafe/f323b9d7-3bd4-4831-ab1a-82562c6ba89d/scratchpad/evalws3/duration/requirements.yml",
+    "testAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep",
+    "codeAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  }
+}

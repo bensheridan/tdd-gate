@@ -1,0 +1,70 @@
+{
+  "id": "slugify/test-contradict-trim-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/slugify.test.ts b/tests/slugify.test.ts\nindex 4c20307..42765ba 100644\n--- a/tests/slugify.test.ts\n+++ b/tests/slugify.test.ts\n@@ -82,21 +82,21 @@ describe(\"strip\", () => {\n     expect(slugify(\"state-of-the-art\")).toBe(\"state-of-the-art\");\n   });\n });\n \n describe(\"trim\", () => {\n   it(\"does not start or end with a hyphen when input has surrounding whitespace\", () => {\n     expect(slugify(\"  hello world  \")).toBe(\"hello-world\");\n   });\n \n   it(\"does not start or end with a hyphen when input has surrounding hyphens\", () => {\n-    expect(slugify(\"-hello-\")).toBe(\"hello\");\n+    expect(slugify(\"-hello-\")).toBe(\"-hello-\");\n   });\n \n   it(\"does not leave hyphens when surrounding punctuation is stripped\", () => {\n     expect(slugify(\"! hello world ?\")).toBe(\"hello-world\");\n   });\n \n   it(\"trims leading whitespace and trailing hyphens, and vice versa\", () => {\n     expect(slugify(\"  hello--\")).toBe(\"hello\");\n     expect(slugify(\"--hello  \")).toBe(\"hello\");\n   });\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "trim",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"The string returned by slugify never starts or ends with a hyphen.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 1027,
+      "outputTokens": 40
+    }
+  }
+}

@@ -1,0 +1,1496 @@
+{
+  "id": "cart/test-contradict-validation-coverage",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/cart.ts exports a function total(items: { price: number; quantity: number }[], options?: { discountCode?: string }): number."
+      },
+      {
+        "id": "sum",
+        "text": "When every item is valid (see validation) and no discount code is given, total returns the sum of price multiplied by quantity over all items, rounded as the rounding requirement says."
+      },
+      {
+        "id": "empty",
+        "text": "total([]) returns 0."
+      },
+      {
+        "id": "discount",
+        "text": "With options.discountCode \"SAVE10\", total takes 10% off the sum. Any other discount code makes total throw an Error. Without a discount code, no discount applies."
+      },
+      {
+        "id": "rounding",
+        "text": "The value total returns is rounded to the nearest cent (2 decimal places)."
+      },
+      {
+        "id": "validation",
+        "text": "An item whose price is negative, or whose quantity is not a positive integer, makes total throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "coverage",
+    "tests": [
+      {
+        "id": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+        "file": "tests/cart.test.ts",
+        "name": "interface > src/cart.ts exports a total function",
+        "line": 6,
+        "code": "    6|   it(\"src/cart.ts exports a total function\", () => {\n    7|     expect(typeof cart.total).toBe(\"function\");\n    8|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+        "file": "tests/cart.test.ts",
+        "name": "interface > returns a number and accepts an options argument",
+        "line": 10,
+        "code": "   10|   it(\"returns a number and accepts an options argument\", () => {\n   11|     const result = total([{ price: 2, quantity: 1 }], { discountCode: \"SAVE10\" });\n   12|     expect(typeof result).toBe(\"number\");\n   13|     expect(result).toBe(1.8);\n   14|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+        "file": "tests/cart.test.ts",
+        "name": "sum > returns price * quantity for a single item",
+        "line": 18,
+        "code": "   18|   it(\"returns price * quantity for a single item\", () => {\n   19|     expect(total([{ price: 10, quantity: 3 }])).toBe(30);\n   20|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::sum > sums price * quantity over several items",
+        "file": "tests/cart.test.ts",
+        "name": "sum > sums price * quantity over several items",
+        "line": 22,
+        "code": "   22|   it(\"sums price * quantity over several items\", () => {\n   23|     expect(\n   24|       total([\n   25|         { price: 10, quantity: 2 },\n   26|         { price: 5.5, quantity: 3 },\n   27|         { price: 0.25, quantity: 4 },\n   28|       ]),\n   29|     ).toBe(37.5);\n   30|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+        "file": "tests/cart.test.ts",
+        "name": "sum > treats a price of 0 as valid",
+        "line": 32,
+        "code": "   32|   it(\"treats a price of 0 as valid\", () => {\n   33|     expect(\n   34|       total([\n   35|         { price: 0, quantity: 5 },\n   36|         { price: 4, quantity: 1 },\n   37|       ]),\n   38|     ).toBe(4);\n   39|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::empty > total([]) returns 0",
+        "file": "tests/cart.test.ts",
+        "name": "empty > total([]) returns 0",
+        "line": 43,
+        "code": "   43|   it(\"total([]) returns 0\", () => {\n   44|     expect(total([])).toBe(0);\n   45|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+        "file": "tests/cart.test.ts",
+        "name": "discount > SAVE10 takes 10% off the sum",
+        "line": 49,
+        "code": "   49|   it(\"SAVE10 takes 10% off the sum\", () => {\n   50|     expect(total([{ price: 100, quantity: 1 }], { discountCode: \"SAVE10\" })).toBe(90);\n   51|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+        "file": "tests/cart.test.ts",
+        "name": "discount > SAVE10 applies to the sum over several items",
+        "line": 53,
+        "code": "   53|   it(\"SAVE10 applies to the sum over several items\", () => {\n   54|     expect(\n   55|       total(\n   56|         [\n   57|           { price: 10, quantity: 2 },\n   58|           { price: 5.5, quantity: 3 },\n   59|         ],\n   60|         { discountCode: \"SAVE10\" },\n   61|       ),\n   62|     ).toBe(32.85);\n   63|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+        "file": "tests/cart.test.ts",
+        "name": "discount > throws an Error for an unknown discount code",
+        "line": 65,
+        "code": "   65|   it(\"throws an Error for an unknown discount code\", () => {\n   66|     expect(() => total([{ price: 10, quantity: 1 }], { discountCode: \"SAVE20\" })).toThrow(Error);\n   67|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+        "file": "tests/cart.test.ts",
+        "name": "discount > throws an Error for a differently-cased code",
+        "line": 69,
+        "code": "   69|   it(\"throws an Error for a differently-cased code\", () => {\n   70|     expect(() => total([{ price: 10, quantity: 1 }], { discountCode: \"save10\" })).toThrow(Error);\n   71|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+        "file": "tests/cart.test.ts",
+        "name": "discount > applies no discount when options are omitted",
+        "line": 73,
+        "code": "   73|   it(\"applies no discount when options are omitted\", () => {\n   74|     expect(total([{ price: 100, quantity: 1 }])).toBe(100);\n   75|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+        "file": "tests/cart.test.ts",
+        "name": "discount > applies no discount when options has no discountCode",
+        "line": 77,
+        "code": "   77|   it(\"applies no discount when options has no discountCode\", () => {\n   78|     expect(total([{ price: 100, quantity: 1 }], {})).toBe(100);\n   79|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+        "file": "tests/cart.test.ts",
+        "name": "rounding > rounds away floating-point error to the nearest cent",
+        "line": 83,
+        "code": "   83|   it(\"rounds away floating-point error to the nearest cent\", () => {\n   84|     // 0.1 * 3 === 0.30000000000000004 in floating point\n   85|     expect(total([{ price: 0.1, quantity: 3 }])).toBe(0.3);\n   86|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "file": "tests/cart.test.ts",
+        "name": "rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "line": 88,
+        "code": "   88|   it(\"rounds a sum with more than two decimals down to the nearest cent\", () => {\n   89|     expect(total([{ price: 3.333, quantity: 1 }])).toBe(3.33);\n   90|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "file": "tests/cart.test.ts",
+        "name": "rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "line": 92,
+        "code": "   92|   it(\"rounds a sum with more than two decimals up to the nearest cent\", () => {\n   93|     expect(total([{ price: 1.006, quantity: 1 }])).toBe(1.01);\n   94|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+        "file": "tests/cart.test.ts",
+        "name": "rounding > rounds the discounted total to the nearest cent",
+        "line": 96,
+        "code": "   96|   it(\"rounds the discounted total to the nearest cent\", () => {\n   97|     // 19.99 * 0.9 = 17.991\n   98|     expect(total([{ price: 19.99, quantity: 1 }], { discountCode: \"SAVE10\" })).toBe(17.99);\n   99|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::validation > throws an Error for a negative price",
+        "file": "tests/cart.test.ts",
+        "name": "validation > throws an Error for a negative price",
+        "line": 103,
+        "code": "  103|   it(\"throws an Error for a negative price\", () => {\n  104|     expect(() => total([{ price: -1, quantity: 1 }])).toThrow(Error);\n  105|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+        "file": "tests/cart.test.ts",
+        "name": "validation > throws an Error when any one item has a negative price",
+        "line": 107,
+        "code": "  107|   it(\"throws an Error when any one item has a negative price\", () => {\n  108|     expect(() =>\n  109|       total([\n  110|         { price: 5, quantity: 1 },\n  111|         { price: -0.01, quantity: 2 },\n  112|       ]),\n  113|     ).toThrow(Error);\n  114|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+        "file": "tests/cart.test.ts",
+        "name": "validation > throws an Error for a quantity of 0",
+        "line": 116,
+        "code": "  116|   it(\"throws an Error for a quantity of 0\", () => {\n  117|     expect(() => total([{ price: 5, quantity: 0 }])).toThrow(Error);\n  118|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+        "file": "tests/cart.test.ts",
+        "name": "validation > throws an Error for a negative quantity",
+        "line": 120,
+        "code": "  120|   it(\"throws an Error for a negative quantity\", () => {\n  121|     expect(() => total([{ price: 5, quantity: -2 }])).toThrow(Error);\n  122|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "file": "tests/cart.test.ts",
+        "name": "validation > throws an Error for a non-integer quantity",
+        "line": 124,
+        "code": "  124|   it(\"throws an Error for a non-integer quantity\", () => {\n  125|     expect(total([{ price: 5, quantity: 1.5 }])).toBe(7.5);\n  126|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+        "file": "tests/cart.test.ts",
+        "name": "validation > throws an Error for a NaN quantity",
+        "line": 128,
+        "code": "  128|   it(\"throws an Error for a NaN quantity\", () => {\n  129|     expect(() => total([{ price: 5, quantity: NaN }])).toThrow(Error);\n  130|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+        "file": "tests/cart.test.ts",
+        "name": "validation > throws an Error for an invalid item even with a valid discount code",
+        "line": 132,
+        "code": "  132|   it(\"throws an Error for an invalid item even with a valid discount code\", () => {\n  133|     expect(() => total([{ price: -5, quantity: 1 }], { discountCode: \"SAVE10\" })).toThrow(Error);\n  134|   });",
+        "truncated": false
+      }
+    ]
+  },
+  "expect": {
+    "conflicts": [
+      "validation"
+    ]
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "cart",
+    "requirement": "validation",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"An item whose price is negative, or whose quantity is not a positive integer, makes total throw an Error.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "requirements": [
+      {
+        "requirementId": "interface",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+            "covers": 0.96,
+            "asserts": 0.62
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+            "covers": 0.92,
+            "asserts": 0.56
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+            "covers": 0.92,
+            "asserts": 0.46
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+            "covers": 0.92,
+            "asserts": 0.61
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+            "covers": 0.91,
+            "asserts": 0.6
+          },
+          {
+            "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+            "covers": 0.88,
+            "asserts": 0.62
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+            "covers": 0.88,
+            "asserts": 0.39
+          },
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+            "covers": 0.88,
+            "asserts": 0.44
+          },
+          {
+            "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+            "covers": 0.86,
+            "asserts": 0.53
+          },
+          {
+            "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+            "covers": 0.86,
+            "asserts": 0.42
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+            "covers": 0.86,
+            "asserts": 0.38
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+            "covers": 0.83,
+            "asserts": 0.33
+          },
+          {
+            "testId": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+            "covers": 0.81,
+            "asserts": 0.35
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+            "covers": 0.8,
+            "asserts": 0.54
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+            "covers": 0.77,
+            "asserts": 0.5
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+            "covers": 0.73,
+            "asserts": 0.43
+          },
+          {
+            "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+            "covers": 0.71,
+            "asserts": 0.37
+          },
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+            "covers": 0.71,
+            "asserts": 0.47
+          }
+        ],
+        "best": 0.96
+      },
+      {
+        "requirementId": "sum",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+            "covers": 0.91,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+            "covers": 0.9,
+            "asserts": 0.76
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+            "covers": 0.88,
+            "asserts": 0.76
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+            "covers": 0.88,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+            "covers": 0.87,
+            "asserts": 0.85
+          },
+          {
+            "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+            "covers": 0.84,
+            "asserts": 0.75
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+            "covers": 0.8,
+            "asserts": 0.77
+          },
+          {
+            "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+            "covers": 0.73,
+            "asserts": 0.68
+          }
+        ],
+        "best": 0.91
+      },
+      {
+        "requirementId": "empty",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+            "covers": 0.98,
+            "asserts": 0.89
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "discount",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+            "covers": 0.96,
+            "asserts": 0.71
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+            "covers": 0.95,
+            "asserts": 0.75
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+            "covers": 0.95,
+            "asserts": 0.56
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+            "covers": 0.93,
+            "asserts": 0.65
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+            "covers": 0.92,
+            "asserts": 0.72
+          },
+          {
+            "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+            "covers": 0.89,
+            "asserts": 0.68
+          },
+          {
+            "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+            "covers": 0.82,
+            "asserts": 0.74
+          }
+        ],
+        "best": 0.96
+      },
+      {
+        "requirementId": "rounding",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+            "covers": 0.97,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+            "covers": 0.96,
+            "asserts": 0.8
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+            "covers": 0.96,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+            "covers": 0.95,
+            "asserts": 0.83
+          }
+        ],
+        "best": 0.97
+      },
+      {
+        "requirementId": "validation",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+            "covers": 0.97,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error for a negative price",
+            "covers": 0.96,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+            "covers": 0.94,
+            "asserts": 0.8
+          },
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+            "covers": 0.94,
+            "asserts": 0.72
+          },
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+            "covers": 0.93,
+            "asserts": 0.73
+          },
+          {
+            "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+            "covers": 0.93,
+            "asserts": 0.83
+          }
+        ],
+        "best": 0.97
+      }
+    ],
+    "conflicts": [
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "requirementId": "validation",
+        "contradicts": 0.93
+      }
+    ],
+    "orphans": [],
+    "pairs": [
+      {
+        "testId": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+        "requirementId": "interface",
+        "covers": 0.81,
+        "asserts": 0.35,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+        "requirementId": "sum",
+        "covers": 0.07,
+        "asserts": 0.14,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+        "requirementId": "empty",
+        "covers": 0.05,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+        "requirementId": "discount",
+        "covers": 0.05,
+        "asserts": 0.1,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+        "requirementId": "rounding",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > src/cart.ts exports a total function",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+        "requirementId": "interface",
+        "covers": 0.96,
+        "asserts": 0.62,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+        "requirementId": "sum",
+        "covers": 0.07,
+        "asserts": 0.34,
+        "contradicts": 0.38
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+        "requirementId": "discount",
+        "covers": 0.82,
+        "asserts": 0.74,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+        "requirementId": "rounding",
+        "covers": 0.16,
+        "asserts": 0.45,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/cart.test.ts::interface > returns a number and accepts an options argument",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+        "requirementId": "interface",
+        "covers": 0.86,
+        "asserts": 0.53,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+        "requirementId": "sum",
+        "covers": 0.84,
+        "asserts": 0.75,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+        "requirementId": "discount",
+        "covers": 0.04,
+        "asserts": 0.26,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+        "requirementId": "rounding",
+        "covers": 0.04,
+        "asserts": 0.19,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > returns price * quantity for a single item",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+        "requirementId": "interface",
+        "covers": 0.88,
+        "asserts": 0.62,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+        "requirementId": "sum",
+        "covers": 0.91,
+        "asserts": 0.81,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+        "requirementId": "discount",
+        "covers": 0.03,
+        "asserts": 0.26,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+        "requirementId": "rounding",
+        "covers": 0.08,
+        "asserts": 0.33,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > sums price * quantity over several items",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.11,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+        "requirementId": "interface",
+        "covers": 0.71,
+        "asserts": 0.37,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+        "requirementId": "sum",
+        "covers": 0.73,
+        "asserts": 0.68,
+        "contradicts": 0.14
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+        "requirementId": "empty",
+        "covers": 0.04,
+        "asserts": 0.1,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+        "requirementId": "discount",
+        "covers": 0.02,
+        "asserts": 0.12,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+        "requirementId": "rounding",
+        "covers": 0.04,
+        "asserts": 0.14,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::sum > treats a price of 0 as valid",
+        "requirementId": "validation",
+        "covers": 0.08,
+        "asserts": 0.11,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+        "requirementId": "interface",
+        "covers": 0.86,
+        "asserts": 0.42,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+        "requirementId": "sum",
+        "covers": 0.37,
+        "asserts": 0.45,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+        "requirementId": "empty",
+        "covers": 0.98,
+        "asserts": 0.89,
+        "contradicts": 0.02
+      },
+      {
+        "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+        "requirementId": "discount",
+        "covers": 0.04,
+        "asserts": 0.13,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+        "requirementId": "rounding",
+        "covers": 0.04,
+        "asserts": 0.13,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::empty > total([]) returns 0",
+        "requirementId": "validation",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.17
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+        "requirementId": "interface",
+        "covers": 0.92,
+        "asserts": 0.56,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+        "requirementId": "sum",
+        "covers": 0.02,
+        "asserts": 0.13,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+        "requirementId": "discount",
+        "covers": 0.96,
+        "asserts": 0.71,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+        "requirementId": "rounding",
+        "covers": 0.03,
+        "asserts": 0.23,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 takes 10% off the sum",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+        "requirementId": "interface",
+        "covers": 0.91,
+        "asserts": 0.6,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+        "requirementId": "sum",
+        "covers": 0.03,
+        "asserts": 0.17,
+        "contradicts": 0.16
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+        "requirementId": "discount",
+        "covers": 0.92,
+        "asserts": 0.72,
+        "contradicts": 0.1
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+        "requirementId": "rounding",
+        "covers": 0.22,
+        "asserts": 0.57,
+        "contradicts": 0.38
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > SAVE10 applies to the sum over several items",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+        "requirementId": "interface",
+        "covers": 0.88,
+        "asserts": 0.39,
+        "contradicts": 0.69
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+        "requirementId": "sum",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+        "requirementId": "empty",
+        "covers": 0.01,
+        "asserts": 0.06,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+        "requirementId": "discount",
+        "covers": 0.95,
+        "asserts": 0.75,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for an unknown discount code",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+        "requirementId": "interface",
+        "covers": 0.83,
+        "asserts": 0.33,
+        "contradicts": 0.34
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+        "requirementId": "sum",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+        "requirementId": "empty",
+        "covers": 0.01,
+        "asserts": 0.07,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+        "requirementId": "discount",
+        "covers": 0.89,
+        "asserts": 0.68,
+        "contradicts": 0.32
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > throws an Error for a differently-cased code",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+        "requirementId": "interface",
+        "covers": 0.86,
+        "asserts": 0.38,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+        "requirementId": "sum",
+        "covers": 0.8,
+        "asserts": 0.77,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+        "requirementId": "empty",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+        "requirementId": "discount",
+        "covers": 0.93,
+        "asserts": 0.65,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+        "requirementId": "rounding",
+        "covers": 0.03,
+        "asserts": 0.17,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options are omitted",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+        "requirementId": "interface",
+        "covers": 0.92,
+        "asserts": 0.46,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+        "requirementId": "sum",
+        "covers": 0.9,
+        "asserts": 0.76,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+        "requirementId": "discount",
+        "covers": 0.95,
+        "asserts": 0.56,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.16,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::discount > applies no discount when options has no discountCode",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+        "requirementId": "interface",
+        "covers": 0.8,
+        "asserts": 0.54,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+        "requirementId": "sum",
+        "covers": 0.87,
+        "asserts": 0.85,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+        "requirementId": "discount",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+        "requirementId": "rounding",
+        "covers": 0.95,
+        "asserts": 0.83,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds away floating-point error to the nearest cent",
+        "requirementId": "validation",
+        "covers": 0.01,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "requirementId": "interface",
+        "covers": 0.73,
+        "asserts": 0.43,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "requirementId": "sum",
+        "covers": 0.88,
+        "asserts": 0.76,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "requirementId": "discount",
+        "covers": 0.02,
+        "asserts": 0.16,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "requirementId": "rounding",
+        "covers": 0.96,
+        "asserts": 0.8,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals down to the nearest cent",
+        "requirementId": "validation",
+        "covers": 0.01,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "requirementId": "interface",
+        "covers": 0.77,
+        "asserts": 0.5,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "requirementId": "sum",
+        "covers": 0.88,
+        "asserts": 0.81,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "requirementId": "discount",
+        "covers": 0.02,
+        "asserts": 0.16,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "requirementId": "rounding",
+        "covers": 0.96,
+        "asserts": 0.82,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds a sum with more than two decimals up to the nearest cent",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+        "requirementId": "interface",
+        "covers": 0.92,
+        "asserts": 0.61,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+        "requirementId": "sum",
+        "covers": 0.06,
+        "asserts": 0.19,
+        "contradicts": 0.17
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+        "requirementId": "discount",
+        "covers": 0.69,
+        "asserts": 0.7,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+        "requirementId": "rounding",
+        "covers": 0.97,
+        "asserts": 0.82,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::rounding > rounds the discounted total to the nearest cent",
+        "requirementId": "validation",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative price",
+        "requirementId": "interface",
+        "covers": 0.69,
+        "asserts": 0.37,
+        "contradicts": 0.26
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative price",
+        "requirementId": "sum",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative price",
+        "requirementId": "empty",
+        "covers": 0.01,
+        "asserts": 0.06,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative price",
+        "requirementId": "discount",
+        "covers": 0.03,
+        "asserts": 0.12,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative price",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative price",
+        "requirementId": "validation",
+        "covers": 0.96,
+        "asserts": 0.81,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+        "requirementId": "interface",
+        "covers": 0.71,
+        "asserts": 0.47,
+        "contradicts": 0.45
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+        "requirementId": "sum",
+        "covers": 0.02,
+        "asserts": 0.13,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+        "requirementId": "empty",
+        "covers": 0.01,
+        "asserts": 0.06,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+        "requirementId": "discount",
+        "covers": 0.02,
+        "asserts": 0.15,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error when any one item has a negative price",
+        "requirementId": "validation",
+        "covers": 0.97,
+        "asserts": 0.82,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+        "requirementId": "interface",
+        "covers": 0.67,
+        "asserts": 0.4,
+        "contradicts": 0.62
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+        "requirementId": "sum",
+        "covers": 0.04,
+        "asserts": 0.17,
+        "contradicts": 0.37
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+        "requirementId": "discount",
+        "covers": 0.03,
+        "asserts": 0.11,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a quantity of 0",
+        "requirementId": "validation",
+        "covers": 0.93,
+        "asserts": 0.73,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+        "requirementId": "interface",
+        "covers": 0.67,
+        "asserts": 0.41,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+        "requirementId": "sum",
+        "covers": 0.04,
+        "asserts": 0.1,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+        "requirementId": "empty",
+        "covers": 0.01,
+        "asserts": 0.06,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+        "requirementId": "discount",
+        "covers": 0.03,
+        "asserts": 0.12,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a negative quantity",
+        "requirementId": "validation",
+        "covers": 0.94,
+        "asserts": 0.8,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "requirementId": "interface",
+        "covers": 0.5,
+        "asserts": 0.26,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "requirementId": "sum",
+        "covers": 0.12,
+        "asserts": 0.37,
+        "contradicts": 0.6
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "requirementId": "empty",
+        "covers": 0.01,
+        "asserts": 0.05,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "requirementId": "discount",
+        "covers": 0.02,
+        "asserts": 0.05,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "requirementId": "rounding",
+        "covers": 0.04,
+        "asserts": 0.17,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a non-integer quantity",
+        "requirementId": "validation",
+        "covers": 0.72,
+        "asserts": 0.31,
+        "contradicts": 0.93
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+        "requirementId": "interface",
+        "covers": 0.68,
+        "asserts": 0.37,
+        "contradicts": 0.48
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+        "requirementId": "sum",
+        "covers": 0.04,
+        "asserts": 0.11,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+        "requirementId": "empty",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+        "requirementId": "discount",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for a NaN quantity",
+        "requirementId": "validation",
+        "covers": 0.94,
+        "asserts": 0.72,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+        "requirementId": "interface",
+        "covers": 0.88,
+        "asserts": 0.44,
+        "contradicts": 0.58
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+        "requirementId": "sum",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+        "requirementId": "empty",
+        "covers": 0.01,
+        "asserts": 0.08,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+        "requirementId": "discount",
+        "covers": 0.14,
+        "asserts": 0.22,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+        "requirementId": "rounding",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/cart.test.ts::validation > throws an Error for an invalid item even with a valid discount code",
+        "requirementId": "validation",
+        "covers": 0.93,
+        "asserts": 0.83,
+        "contradicts": 0.05
+      }
+    ],
+    "failures": [],
+    "truncatedTests": [],
+    "usage": {
+      "requests": 23,
+      "questions": 414,
+      "inputTokens": 73884,
+      "outputTokens": 7820
+    }
+  }
+}

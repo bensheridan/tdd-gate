@@ -1,0 +1,70 @@
+{
+  "id": "slugify/test-contradict-whitespace-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/slugify.test.ts b/tests/slugify.test.ts\nindex 4c20307..42a98e5 100644\n--- a/tests/slugify.test.ts\n+++ b/tests/slugify.test.ts\n@@ -32,21 +32,21 @@ describe(\"lowercase\", () => {\n     expect(slugify(\"ABC123\")).toBe(\"abc123\");\n   });\n });\n \n describe(\"whitespace\", () => {\n   it(\"replaces a single space with a hyphen\", () => {\n     expect(slugify(\"hello world\")).toBe(\"hello-world\");\n   });\n \n   it(\"replaces a run of several spaces with a single hyphen\", () => {\n-    expect(slugify(\"hello     world\")).toBe(\"hello-world\");\n+    expect(slugify(\"hello     world\")).toBe(\"hello-----world\");\n   });\n \n   it(\"replaces tabs and newlines as whitespace\", () => {\n     expect(slugify(\"hello\\tworld\\nagain\")).toBe(\"hello-world-again\");\n   });\n \n   it(\"replaces a mixed run of whitespace characters with a single hyphen\", () => {\n     expect(slugify(\"hello \\t\\n  world\")).toBe(\"hello-world\");\n   });\n \n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "whitespace",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"slugify(title) replaces each run of one or more whitespace characters with a single hyphen.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 1013,
+      "outputTokens": 40
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "id": "duration/test-contradict-units-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)"
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/duration.test.ts b/tests/duration.test.ts\nindex 12afd89..b8d176a 100644\n--- a/tests/duration.test.ts\n+++ b/tests/duration.test.ts\n@@ -5,21 +5,21 @@ describe(\"interface\", () => {\n   it(\"[interface] src/duration.ts exports parseDuration returning seconds as a number\", () => {\n     expect(typeof parseDuration).toBe(\"function\");\n     const result = parseDuration(\"1h\");\n     expect(typeof result).toBe(\"number\");\n     expect(result).toBe(3600);\n   });\n });\n \n describe(\"units\", () => {\n   it('[units] \"1h30m\" is 5400', () => {\n-    expect(parseDuration(\"1h30m\")).toBe(5400);\n+    expect(parseDuration(\"1h30m\")).toBe(3630);\n   });\n \n   it('[units] \"2m5s\" is 125', () => {\n     expect(parseDuration(\"2m5s\")).toBe(125);\n   });\n \n   it('[units] \"1h\" is 3600', () => {\n     expect(parseDuration(\"1h\")).toBe(3600);\n   });\n \n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "duration",
+    "requirement": "units",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 1030,
+      "outputTokens": 40
+    }
+  }
+}

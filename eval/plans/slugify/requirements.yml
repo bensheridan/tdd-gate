@@ -1,0 +1,19 @@
+requirements:
+  - id: interface
+    text: >-
+      The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string.
+  - id: lowercase
+    text: slugify(title) returns the title with every letter in lowercase.
+  - id: whitespace
+    text: slugify(title) replaces each run of one or more whitespace characters with a single hyphen.
+  - id: strip
+    text: >-
+      slugify(title) removes every character that is not a letter, a digit, a hyphen or
+      whitespace (whitespace is covered by the whitespace requirement). Such characters are
+      dropped, not replaced with a word or a hyphen.
+  - id: trim
+    text: The string returned by slugify never starts or ends with a hyphen.
+  - id: max-length
+    text: >-
+      slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last
+      hyphen before the limit when there is one.

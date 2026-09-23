@@ -1,0 +1,70 @@
+{
+  "id": "slugify/test-contradict-lowercase-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/slugify.test.ts b/tests/slugify.test.ts\nindex 4c20307..15185e5 100644\n--- a/tests/slugify.test.ts\n+++ b/tests/slugify.test.ts\n@@ -18,21 +18,21 @@ describe(\"interface\", () => {\n     expect(slugify(\"hello\", {})).toBe(\"hello\");\n   });\n });\n \n describe(\"lowercase\", () => {\n   it(\"lowercases every letter\", () => {\n     expect(slugify(\"HELLO\")).toBe(\"hello\");\n   });\n \n   it(\"lowercases mixed-case input\", () => {\n-    expect(slugify(\"HeLLo WoRLD\")).toBe(\"hello-world\");\n+    expect(slugify(\"HeLLo WoRLD\")).toBe(\"Hello-World\");\n   });\n \n   it(\"leaves digits unchanged while lowercasing letters\", () => {\n     expect(slugify(\"ABC123\")).toBe(\"abc123\");\n   });\n });\n \n describe(\"whitespace\", () => {\n   it(\"replaces a single space with a hyphen\", () => {\n     expect(slugify(\"hello world\")).toBe(\"hello-world\");\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "lowercase",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"slugify(title) returns the title with every letter in lowercase.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 1001,
+      "outputTokens": 40
+    }
+  }
+}

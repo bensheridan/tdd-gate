@@ -1,0 +1,70 @@
+{
+  "id": "slugify/test-contradict-max-length-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/slugify.test.ts b/tests/slugify.test.ts\nindex 4c20307..30e249c 100644\n--- a/tests/slugify.test.ts\n+++ b/tests/slugify.test.ts\n@@ -111,21 +111,21 @@ describe(\"max-length\", () => {\n     expect(slugify(\"hello world\", { maxLength: 11 })).toBe(\"hello-world\");\n   });\n \n   it(\"cuts at the last hyphen before the limit\", () => {\n     // \"hello-world-foo\" (15 chars); first 13 chars are \"hello-world-f\"\n     expect(slugify(\"hello world foo\", { maxLength: 13 })).toBe(\"hello-world\");\n   });\n \n   it(\"cuts at the last hyphen, not the first\", () => {\n     // \"the-quick-brown-fox\"; first 12 chars are \"the-quick-br\"\n-    expect(slugify(\"The quick brown fox\", { maxLength: 12 })).toBe(\"the-quick\");\n+    expect(slugify(\"The quick brown fox\", { maxLength: 12 })).toBe(\"the\");\n   });\n \n   it(\"cuts at exactly maxLength when there is no hyphen\", () => {\n     expect(slugify(\"abcdefghij\", { maxLength: 5 })).toBe(\"abcde\");\n   });\n \n   it(\"never returns more than maxLength characters\", () => {\n     const title = \"The Quick Brown Fox Jumps Over The Lazy Dog\";\n     for (let max = 1; max <= 50; max++) {\n       expect(slugify(title, { maxLength: max }).length).toBeLessThanOrEqual(max);\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "max-length",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 1140,
+      "outputTokens": 40
+    }
+  }
+}

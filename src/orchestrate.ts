@@ -148,8 +148,12 @@ export async function orchestrate(options: RunOptions): Promise<RunResult> {
     const log = options.log ?? (() => {});
     const load = () => loadTests(options.testPaths, repo);
     // Coverage only looks where it is told, so the test agent must be told the same place.
-    const where = options.testPaths.filter((p) => p !== "." && p !== "./");
+    const where = options.testPaths.filter((p) => p !== "." && p !== "./").map((p) => p.replace(/\/+$/, ""));
     const testHint = `files named *.test.* / *.spec.*, test_*.py or *_test.py${where.length ? `, under ${where.join(" or ")}` : ""}`;
+    // The test agent owns test files where coverage looks for them, and nowhere else: a test it
+    // puts elsewhere would never be judged, so it is discarded and the agent is told why.
+    const inTestPaths = (f: string) => where.length === 0 || where.some((p) => f === p || f.startsWith(`${p}/`));
+    const ownsTest = (f: string) => isTestFile(f) && inTestPaths(f);
 
     ws.assertClean(repo);
     const original = ws.currentBranch(repo);
@@ -163,6 +167,8 @@ export async function orchestrate(options: RunOptions): Promise<RunResult> {
     const pending: Record<Role, string[]> = { "test-agent": [], "code-agent": [] };
     let next: Role = "test-agent";
     let codeExists = false;
+    // (test, requirement) conflicts from the previous coverage check, to spot ones the test agent cannot fix.
+    let lastConflicts = new Set<string>();
     const finish = (status: RunResult["status"], reasons: string[] = []): RunResult => ({ status, branch, turns, reasons, notes });
 
     try {
@@ -197,10 +203,11 @@ export async function orchestrate(options: RunOptions): Promise<RunResult> {
             }
 
             // 2. Keep only the files this agent owns.
-            const owns = role === "test-agent" ? isTestFile : (f: string) => !isTestFile(f);
+            const owns = role === "test-agent" ? ownsTest : (f: string) => !isTestFile(f);
             const { kept, dropped } = ws.filterDiff(diff, owns, wt);
             if (dropped.length) {
-                const msg = `Changes to ${dropped.join(", ")} were discarded: ${role === "test-agent" ? "only test files are yours" : "test files are not yours"}.`;
+                const yours = role === "test-agent" ? `only ${testHint} are yours` : "test files are not yours";
+                const msg = `Changes to ${dropped.join(", ")} were discarded: ${yours}.`;
                 send(role, [msg]);
                 note([msg]);
             }
@@ -241,7 +248,30 @@ export async function orchestrate(options: RunOptions): Promise<RunResult> {
                 const code = coverageExitCode(coverage);
                 if (code === 2) return finish("error", coverage.failures.map((f) => `coverage could not judge ${f.testId}: ${f.error}`));
                 const cf = coverageFeedback(coverage);
+                if (coverage.requirements.length && coverage.pairs.length === 0) {
+                    cf.items.unshift(`No tests were found${where.length ? ` under ${where.join(" or ")}` : ""}. Put the test files there.`);
+                }
                 note(cf.notes);
+                // A conflict that survives a round in which the test agent was asked to fix it is usually
+                // the plan contradicting itself: the test is right for one requirement and wrong for another.
+                const key = (c: { testId: string; requirementId: string }) => `${c.testId}\u0000${c.requirementId}`;
+                const stuck = coverage.conflicts.filter((c) => lastConflicts.has(key(c)));
+                lastConflicts = new Set(coverage.conflicts.map(key));
+                if (stuck.length) {
+                    return finish(
+                        "needs-human",
+                        stuck.map((c) => {
+                            const aimed = coverage.pairs
+                                .filter((p) => p.testId === c.testId && p.requirementId !== c.requirementId && p.contradicts < plan.thresholds.covered)
+                                .sort((a, b) => b.covers - a.covers)[0];
+                            const other = aimed && aimed.covers >= plan.thresholds.covered ? aimed.requirementId : undefined;
+                            return (
+                                `Test "${c.testId}" still expects what requirement [${c.requirementId}] rules out after the test agent was asked to fix it.` +
+                                (other ? ` It is aimed at [${other}]: [${c.requirementId}] and [${other}] may contradict each other.` : "")
+                            );
+                        })
+                    );
+                }
                 if (code === 1) {
                     send("test-agent", cf.items);
                     next = "test-agent";

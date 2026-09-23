@@ -9,6 +9,9 @@ import { applicableDiffRules, checkDiff, diffExitCode, gateHunks, type Gate } fr
 import { checkDrift } from "./drift.js";
 import { codeAgentPrompt, commandAgent, DEFAULT_AGENT_COMMAND, testAgentPrompt } from "./agents.js";
 import { commandTestRunner, orchestrate, typesafeGates } from "./orchestrate.js";
+import { loadCases, recordingGates, saveCase } from "./cases.js";
+import { formatEvalRun, formatUnlabeled, runEvalSet } from "./evalset.js";
+import { harvest, KINDS } from "./harvest.js";
 import { parseDiff } from "./diff.js";
 import { loadJunit } from "./junit.js";
 import { formatBlame, formatCoverage, formatDiffGate, formatJson } from "./report.js";
@@ -40,10 +43,25 @@ Usage:
   tdd-gate run --requirements <yml> --test-command "<cmd writing JUnit to {junit}>"
                [--repo <dir>] [--tests <path in repo>...] [--agent <cmd>]
                [--test-agent <cmd>] [--code-agent <cmd>] [--max-turns <n>] [--link <path>...]
+               [--record <dir>]
       Reference orchestrator: runs a test agent and a code agent against the plan through all
       the gates, committing accepted turns to a new tdd-gate/run-* branch in the repo. Agents
       get the prompt on stdin in a throwaway worktree; the code agent's has no test files.
       Default agent: ${DEFAULT_AGENT_COMMAND}
+      --record saves every gate decision as an unlabeled eval case in <dir>.
+
+  tdd-gate harvest --repo <dir> --head <run branch> --requirements <yml> --name <plan name>
+                   --test-command "<cmd with {junit}>" --out <dir> [--base <ref>] [--tests <path>...]
+                   [--agent <cmd>] [--kinds a,b] [--skip-requirements id,...] [--concurrency <n>]
+      Labeled eval cases from a finished run: a real agent makes one specific change per case
+      (a bug in requirement R, a contradicting test, a skipped test, an unrequested feature, a
+      refactor...), checked mechanically against the tests; the label follows from the request.
+      Kinds: ${KINDS.map((k) => k.id).join(", ")}
+
+  tdd-gate eval --cases <dir> [--recorded] [--unlabeled]
+      Re-runs the current gates on every case and scores the labeled ones: precision and recall
+      per rule, accuracy per route, by label source. --recorded scores the saved outputs instead
+      (no API calls). --unlabeled lists unlabeled cases with what the gates say about them now.
 
   <diff> is --diff <file|-> or --base <ref> [--head <ref>] (git diff base...head).
   --code-diff is accepted as another name for --diff. --requirements supplies thresholds.
@@ -64,18 +82,20 @@ Exit codes:
             (removed assertions and deleted test files are reported for a person, never fail)
   drift     0 nothing flagged, 1 unrequested behaviour, 2 not judged / bad input
             (hunks no requirement needs are reported for a person, never fail)
-  run       0 all tests pass, 1 stopped for a person or out of turns, 2 error / bad input`;
+  run       0 all tests pass, 1 stopped for a person or out of turns, 2 error / bad input
+  harvest   0 at least one case written, 1 none, 2 error / bad input
+  eval      0 scored, 2 some cases not judged / bad input`;
 
 interface Args {
-    command: "coverage" | "blame" | "drift" | "run" | Gate;
+    command: "coverage" | "blame" | "drift" | "run" | "harvest" | "eval" | Gate;
     flags: Map<string, string[]>;
     bools: Set<string>;
 }
 
 function parseArgs(argv: string[]): Args {
     const [command, ...rest] = argv;
-    if (!["coverage", "blame", "gaming", "weakening", "drift", "run"].includes(command)) {
-        throw new Error(`Unknown command "${command ?? ""}". Use coverage, blame, gaming, weakening, drift or run (see --help).`);
+    if (!["coverage", "blame", "gaming", "weakening", "drift", "run", "harvest", "eval"].includes(command)) {
+        throw new Error(`Unknown command "${command ?? ""}". Use coverage, blame, gaming, weakening, drift, run, harvest or eval (see --help).`);
     }
     const flags = new Map<string, string[]>();
     const bools = new Set<string>();
@@ -83,7 +103,7 @@ function parseArgs(argv: string[]): Args {
         const a = rest[i];
         if (!a.startsWith("-")) throw new Error(`Unexpected argument "${a}".`);
         const name = a.replace(/^-+/, "");
-        if (name === "dry-run") {
+        if (name === "dry-run" || name === "recorded" || name === "unlabeled") {
             bools.add(name);
             continue;
         }
@@ -156,7 +176,57 @@ async function main(): Promise<number> {
         return diffExitCode(result);
     }
 
+    if (args.command === "eval") {
+        const cases = loadCases(resolve(need(args, "cases")));
+        if (cases.length === 0) throw new Error("No cases found.");
+        const recorded = args.bools.has("recorded");
+        if (dryRun) {
+            const byGate = new Map<string, number>();
+            for (const c of cases) byGate.set(`${c.input.gate} (${c.labelSource})`, (byGate.get(`${c.input.gate} (${c.labelSource})`) ?? 0) + 1);
+            for (const [k, n] of [...byGate].sort()) console.log(`${k.padEnd(30)} ${n}`);
+            console.log(`\n${cases.length} case(s). Nothing was sent.`);
+            return 0;
+        }
+        const client = recorded ? undefined : createClient();
+        const run = await runEvalSet(cases, (c) => typesafeGates(client!, c.plan, 2), { recorded, concurrency });
+        if (format === "json") console.log(formatJson({ ...run, results: Object.fromEntries(run.results), unlabeled: run.unlabeled.map((c) => c.id) }));
+        else console.log(args.bools.has("unlabeled") ? formatUnlabeled(run) : formatEvalRun(run));
+        return run.errors.length ? 2 : 0;
+    }
+
     const plan = loadPlan(need(args, "requirements"));
+
+    if (args.command === "harvest") {
+        const repo = resolve(need(args, "repo"));
+        const testCommand = need(args, "test-command");
+        if (!testCommand.includes("{junit}")) throw new Error("--test-command must write a JUnit report to {junit}.");
+        const kinds = str(args, "kinds")?.split(",").map((k) => k.trim()).filter(Boolean);
+        const unknown = kinds?.filter((k) => !KINDS.some((x) => x.id === k)) ?? [];
+        if (unknown.length) throw new Error(`Unknown kind(s): ${unknown.join(", ")}. Kinds: ${KINDS.map((k) => k.id).join(", ")}`);
+        const out = resolve(need(args, "out"));
+        const agentCmd = str(args, "agent") ?? DEFAULT_AGENT_COMMAND;
+        const result = await harvest({
+            repo,
+            head: need(args, "head"),
+            base: str(args, "base") ?? "main",
+            plan,
+            name: need(args, "name"),
+            testPaths: testPaths.length ? testPaths : ["."],
+            agent: commandAgent(agentCmd),
+            agentCommand: agentCmd,
+            gates: typesafeGates(createClient(), plan, 2),
+            runTests: commandTestRunner(testCommand),
+            kinds,
+            skipRequirements: str(args, "skip-requirements")?.split(",").map((k) => k.trim()),
+            link: args.flags.get("link") ?? ["node_modules"],
+            concurrency: Number(str(args, "concurrency") ?? 3),
+            log: (line) => console.error(`[harvest] ${line}`),
+        });
+        for (const c of result.cases) saveCase(out, c);
+        for (const d of result.discarded) console.log(`DISCARDED ${d.id}: ${d.reason}`);
+        console.log(`\n${result.cases.length} case(s) written to ${out}; ${result.discarded.length} mutant(s) discarded.`);
+        return result.cases.length ? 0 : 1;
+    }
 
     if (args.command === "run") {
         const repo = resolve(str(args, "repo") ?? ".");
@@ -169,6 +239,8 @@ async function main(): Promise<number> {
         if (!Number.isInteger(maxTurns) || maxTurns < 1) throw new Error("--max-turns must be a positive integer.");
         const tests = testPaths.length ? testPaths : ["."];
         const link = args.flags.get("link") ?? ["node_modules"];
+        const record = str(args, "record") ? resolve(str(args, "record")!) : undefined;
+        const runStamp = new Date().toISOString().replace(/[:.]/g, "-");
         if (dryRun) {
             console.log(`repo:          ${repo}\ntests:         ${tests.join(", ")}\ntest command:  ${testCommand}\ntest agent:    ${testAgentCmd}\ncode agent:    ${codeAgentCmd}\nmax turns:     ${maxTurns}\nlinked:        ${link.join(", ")}`);
             console.log(`\n--- first test-agent prompt ---\n${testAgentPrompt(plan.requirements, [], "files named *.test.* / *.spec.*, test_*.py or *_test.py", testCommand)}`);
@@ -182,7 +254,13 @@ async function main(): Promise<number> {
             plan,
             testPaths: tests,
             agents: { "test-agent": commandAgent(testAgentCmd), "code-agent": commandAgent(codeAgentCmd) },
-            gates: typesafeGates(createClient(), plan, concurrency),
+            gates: record
+                ? recordingGates(typesafeGates(createClient(), plan, concurrency), plan, (c) => saveCase(record, c), `run-${runStamp}`, {
+                      requirements: str(args, "requirements")!,
+                      testAgent: testAgentCmd,
+                      codeAgent: codeAgentCmd,
+                  })
+                : typesafeGates(createClient(), plan, concurrency),
             runTests: commandTestRunner(testCommand),
             testCommand,
             maxTurns,

@@ -1,0 +1,94 @@
+{
+  "id": "duration/add-feature-drift",
+  "kind": "add-feature",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)"
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "drift",
+    "diff": "diff --git a/src/duration.ts b/src/duration.ts\nindex d1789d3..f3eba92 100644\n--- a/src/duration.ts\n+++ b/src/duration.ts\n@@ -7,10 +7,28 @@ export function parseDuration(text: string): number {\n   }\n \n   const match = COMPONENTS.exec(text);\n   if (text === \"\" || match === null) {\n     throw new Error(`Invalid duration: \"${text}\"`);\n   }\n \n   const [, hours = \"0\", minutes = \"0\", seconds = \"0\"] = match;\n   return Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);\n }\n+\n+export function formatDuration(totalSeconds: number): string {\n+  if (!Number.isInteger(totalSeconds) || totalSeconds < 0) {\n+    throw new Error(`Invalid seconds: ${totalSeconds}`);\n+  }\n+  if (totalSeconds === 0) {\n+    return \"0s\";\n+  }\n+\n+  const hours = Math.floor(totalSeconds / 3600);\n+  const minutes = Math.floor((totalSeconds % 3600) / 60);\n+  const seconds = totalSeconds % 60;\n+  return (\n+    (hours ? `${hours}h` : \"\") +\n+    (minutes ? `${minutes}m` : \"\") +\n+    (seconds ? `${seconds}s` : \"\")\n+  );\n+}\n"
+  },
+  "expect": {
+    "flagged": [
+      "unrequested-behaviour"
+    ]
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "duration",
+    "requirement": "units",
+    "asked": "Add one small feature that the requirements do not ask for (your choice: an extra option, caching, logging, or an extra exported function). Keep all existing behaviour. Do not write tests.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "drift",
+    "findings": [
+      {
+        "gate": "drift",
+        "file": "src/duration.ts",
+        "startLine": 17,
+        "endLine": 34,
+        "ruleId": "unrequested-behaviour",
+        "title": "Behaviour no requirement asks for",
+        "severity": "error",
+        "probability": 0.93,
+        "band": "violation",
+        "route": "code-agent",
+        "message": "Adds behaviour no requirement asks for (p=0.93): remove it, or add the requirement to the plan"
+      }
+    ],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 8,
+      "inputTokens": 2192,
+      "outputTokens": 147
+    },
+    "trace": [
+      {
+        "file": "src/duration.ts",
+        "startLine": 17,
+        "endLine": 34,
+        "requirements": []
+      }
+    ]
+  }
+}

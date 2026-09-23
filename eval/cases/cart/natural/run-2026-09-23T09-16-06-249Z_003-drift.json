@@ -1,0 +1,82 @@
+{
+  "id": "run-2026-09-23T09-16-06-249Z/003-drift",
+  "kind": "run",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/cart.ts exports a function total(items: { price: number; quantity: number }[], options?: { discountCode?: string }): number."
+      },
+      {
+        "id": "sum",
+        "text": "When every item is valid (see validation) and no discount code is given, total returns the sum of price multiplied by quantity over all items, rounded as the rounding requirement says."
+      },
+      {
+        "id": "empty",
+        "text": "total([]) returns 0."
+      },
+      {
+        "id": "discount",
+        "text": "With options.discountCode \"SAVE10\", total takes 10% off the sum. Any other discount code makes total throw an Error. Without a discount code, no discount applies."
+      },
+      {
+        "id": "rounding",
+        "text": "The value total returns is rounded to the nearest cent (2 decimal places)."
+      },
+      {
+        "id": "validation",
+        "text": "An item whose price is negative, or whose quantity is not a positive integer, makes total throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "drift",
+    "diff": "diff --git a/src/cart.ts b/src/cart.ts\nnew file mode 100644\nindex 0000000..7ca4820\n--- /dev/null\n+++ b/src/cart.ts\n@@ -0,0 +1,26 @@\n+export function total(\n+  items: { price: number; quantity: number }[],\n+  options?: { discountCode?: string },\n+): number {\n+  let sum = 0;\n+  for (const item of items) {\n+    if (item.price < 0) {\n+      throw new Error(`Invalid price: ${item.price}`);\n+    }\n+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {\n+      throw new Error(`Invalid quantity: ${item.quantity}`);\n+    }\n+    sum += item.price * item.quantity;\n+  }\n+\n+  const discountCode = options?.discountCode;\n+  if (discountCode !== undefined) {\n+    if (discountCode !== \"SAVE10\") {\n+      throw new Error(`Invalid discount code: ${discountCode}`);\n+    }\n+    sum *= 0.9;\n+  }\n+\n+  // toPrecision strips binary floating-point noise (e.g. 1.005 * 100 = 100.49999...)\n+  return Math.round(Number((sum * 100).toPrecision(15))) / 100;\n+}\n"
+  },
+  "expect": {},
+  "labelSource": "unlabeled",
+  "recorded": {
+    "gate": "drift",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 8,
+      "inputTokens": 2019,
+      "outputTokens": 147
+    },
+    "trace": [
+      {
+        "file": "src/cart.ts",
+        "startLine": 1,
+        "endLine": 26,
+        "requirements": [
+          "interface",
+          "sum",
+          "discount",
+          "validation",
+          "rounding",
+          "empty"
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "requirements": "/private/tmp/claude-501/-Users-bensheridan-Documents-GitHub-typesafe/f323b9d7-3bd4-4831-ab1a-82562c6ba89d/scratchpad/evalws3/cart/requirements.yml",
+    "testAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep",
+    "codeAgent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  }
+}

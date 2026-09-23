@@ -1,0 +1,23 @@
+requirements:
+  - id: interface
+    text: >-
+      The file src/duration.ts exports a function parseDuration(text: string): number that returns
+      a number of seconds.
+  - id: units
+    text: >-
+      For input made of components in the order the order requirement allows, each a
+      non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds),
+      parseDuration returns the total in seconds: "1h30m" is 5400 and "2m5s" is 125. (A string
+      with no unit at all is covered by the bare-seconds requirement.)
+  - id: order
+    text: >-
+      Components must appear in the order h, m, s, with each unit at most once and no spaces;
+      "30m1h", "1h1h" and "1h 30m" make parseDuration throw an Error.
+  - id: bare-seconds
+    text: A string that is only a non-negative integer, with no unit, is that many seconds ("90" is 90).
+  - id: empty
+    text: An empty string makes parseDuration throw an Error.
+  - id: invalid
+    text: >-
+      Any other input (unknown units, signs, decimal points, letters or other characters) makes
+      parseDuration throw an Error.

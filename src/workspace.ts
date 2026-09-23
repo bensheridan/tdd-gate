@@ -45,10 +45,10 @@ export interface Worktree {
     remove(): void;
 }
 
-/** A detached worktree at HEAD, with `hide` paths deleted and `link` paths symlinked from the project. */
-export function openWorktree(repo: string, hide: (file: string) => boolean, link: string[] = []): Worktree {
+/** A detached worktree at `ref`, with `hide` paths deleted and `link` paths symlinked from the project. */
+export function openWorktree(repo: string, hide: (file: string) => boolean, link: string[] = [], ref = "HEAD"): Worktree {
     const dir = mkdtempSync(join(tmpdir(), "tdd-gate-wt-"));
-    git(repo, ["worktree", "add", "-q", "--detach", dir, "HEAD"]);
+    git(repo, ["worktree", "add", "-q", "--detach", dir, ref]);
     const hidden = trackedFiles(dir).filter(hide);
     for (const f of hidden) unlinkSync(join(dir, f));
     const linked: string[] = [];
@@ -82,7 +82,8 @@ export function worktreeDiff(wt: Worktree): string {
     git(wt.dir, ["add", "-A"]);
     // Symlinks we created are not the agent's; unstage them if an ignore rule did not already.
     for (const l of wt.linked) git(wt.dir, ["rm", "-q", "--cached", "--ignore-unmatch", "-r", "--", l]);
-    return git(wt.dir, ["diff", "--cached", "--binary", "--no-color", "--no-ext-diff", "HEAD"]);
+    // 10 lines of context, as the gates were tuned with (git's default is 3).
+    return git(wt.dir, ["diff", "--cached", "--binary", "-U10", "--no-color", "--no-ext-diff", "HEAD"]);
 }
 
 export interface FileDiff {
@@ -136,6 +137,16 @@ export function applyAndCommit(repo: string, diff: string, message: string): str
         rmSync(join(patch, ".."), { recursive: true, force: true });
     }
     return head(repo);
+}
+
+/** Applies a diff to a worktree's index and files (not committed). */
+export function applyToWorktree(dir: string, diff: string): void {
+    git(dir, ["apply", "--index", "--whitespace=nowarn", "-"], diff);
+}
+
+/** Diff from `base` to the worktree's index: the code as blame would see it after a staged change. */
+export function stagedDiffFrom(dir: string, base: string): string {
+    return git(dir, ["diff", "--cached", "-U10", "--no-color", "--no-ext-diff", base]);
 }
 
 /** Diff of the project between two commits, for blame's view of the code. */

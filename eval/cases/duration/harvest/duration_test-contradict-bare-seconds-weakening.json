@@ -1,0 +1,70 @@
+{
+  "id": "duration/test-contradict-bare-seconds-weakening",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)"
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "weakening",
+    "diff": "diff --git a/tests/duration.test.ts b/tests/duration.test.ts\nindex 12afd89..de12152 100644\n--- a/tests/duration.test.ts\n+++ b/tests/duration.test.ts\n@@ -82,21 +82,21 @@ describe(\"order\", () => {\n   });\n \n   it('[order] \" 1h\" and \"1h \" throw (surrounding spaces)', () => {\n     expect(() => parseDuration(\" 1h\")).toThrow(Error);\n     expect(() => parseDuration(\"1h \")).toThrow(Error);\n   });\n });\n \n describe(\"bare-seconds\", () => {\n   it('[bare-seconds] \"90\" is 90', () => {\n-    expect(parseDuration(\"90\")).toBe(90);\n+    expect(parseDuration(\"90\")).toBe(5400);\n   });\n \n   it('[bare-seconds] \"0\" is 0', () => {\n     expect(parseDuration(\"0\")).toBe(0);\n   });\n \n   it('[bare-seconds] \"3600\" is 3600', () => {\n     expect(parseDuration(\"3600\")).toBe(3600);\n   });\n });\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "duration",
+    "requirement": "bare-seconds",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90).\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "weakening",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 2,
+      "inputTokens": 1022,
+      "outputTokens": 40
+    }
+  }
+}

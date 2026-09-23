@@ -1,0 +1,78 @@
+{
+  "id": "cart/code-bug-rounding-drift",
+  "kind": "code-bug",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/cart.ts exports a function total(items: { price: number; quantity: number }[], options?: { discountCode?: string }): number."
+      },
+      {
+        "id": "sum",
+        "text": "When every item is valid (see validation) and no discount code is given, total returns the sum of price multiplied by quantity over all items, rounded as the rounding requirement says."
+      },
+      {
+        "id": "empty",
+        "text": "total([]) returns 0."
+      },
+      {
+        "id": "discount",
+        "text": "With options.discountCode \"SAVE10\", total takes 10% off the sum. Any other discount code makes total throw an Error. Without a discount code, no discount applies."
+      },
+      {
+        "id": "rounding",
+        "text": "The value total returns is rounded to the nearest cent (2 decimal places)."
+      },
+      {
+        "id": "validation",
+        "text": "An item whose price is negative, or whose quantity is not a positive integer, makes total throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "drift",
+    "diff": "diff --git a/src/cart.ts b/src/cart.ts\nindex 7ca4820..8f0afab 100644\n--- a/src/cart.ts\n+++ b/src/cart.ts\n@@ -15,12 +15,12 @@ export function total(\n \n   const discountCode = options?.discountCode;\n   if (discountCode !== undefined) {\n     if (discountCode !== \"SAVE10\") {\n       throw new Error(`Invalid discount code: ${discountCode}`);\n     }\n     sum *= 0.9;\n   }\n \n   // toPrecision strips binary floating-point noise (e.g. 1.005 * 100 = 100.49999...)\n-  return Math.round(Number((sum * 100).toPrecision(15))) / 100;\n+  return Math.floor(Number((sum * 100).toPrecision(15))) / 100;\n }\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "cart",
+    "requirement": "rounding",
+    "asked": "Introduce one realistic bug into the implementation so that this requirement is no longer met for some inputs: \"The value total returns is rounded to the nearest cent (2 decimal places).\". Every other requirement must keep working. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "drift",
+    "findings": [],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 8,
+      "inputTokens": 1848,
+      "outputTokens": 147
+    },
+    "trace": [
+      {
+        "file": "src/cart.ts",
+        "startLine": 25,
+        "endLine": 25,
+        "requirements": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,1696 @@
+{
+  "id": "slugify/test-contradict-lowercase-coverage",
+  "kind": "test-contradict",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/slugify.ts exports a function slugify(title: string, options?: { maxLength?: number }): string."
+      },
+      {
+        "id": "lowercase",
+        "text": "slugify(title) returns the title with every letter in lowercase."
+      },
+      {
+        "id": "whitespace",
+        "text": "slugify(title) replaces each run of one or more whitespace characters with a single hyphen."
+      },
+      {
+        "id": "strip",
+        "text": "slugify(title) removes every character that is not a letter, a digit, a hyphen or whitespace (whitespace is covered by the whitespace requirement). Such characters are dropped, not replaced with a word or a hyphen."
+      },
+      {
+        "id": "trim",
+        "text": "The string returned by slugify never starts or ends with a hyphen."
+      },
+      {
+        "id": "max-length",
+        "text": "slugify(title, { maxLength }) returns at most maxLength characters, cutting at the last hyphen before the limit when there is one."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "coverage",
+    "tests": [
+      {
+        "id": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > exports a slugify function from src/slugify.ts",
+        "line": 5,
+        "code": "    5|   it(\"exports a slugify function from src/slugify.ts\", () => {\n    6|     expect(typeof slugify).toBe(\"function\");\n    7|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > accepts a title with no options and returns a string",
+        "line": 9,
+        "code": "    9|   it(\"accepts a title with no options and returns a string\", () => {\n   10|     expect(slugify(\"hello\")).toBe(\"hello\");\n   11|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > accepts an options object with maxLength",
+        "line": 13,
+        "code": "   13|   it(\"accepts an options object with maxLength\", () => {\n   14|     expect(slugify(\"hello\", { maxLength: 10 })).toBe(\"hello\");\n   15|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "file": "tests/slugify.test.ts",
+        "name": "interface > accepts an empty options object",
+        "line": 17,
+        "code": "   17|   it(\"accepts an empty options object\", () => {\n   18|     expect(slugify(\"hello\", {})).toBe(\"hello\");\n   19|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "file": "tests/slugify.test.ts",
+        "name": "lowercase > lowercases every letter",
+        "line": 23,
+        "code": "   23|   it(\"lowercases every letter\", () => {\n   24|     expect(slugify(\"HELLO\")).toBe(\"hello\");\n   25|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "file": "tests/slugify.test.ts",
+        "name": "lowercase > lowercases mixed-case input",
+        "line": 27,
+        "code": "   27|   it(\"lowercases mixed-case input\", () => {\n   28|     expect(slugify(\"HeLLo WoRLD\")).toBe(\"Hello-World\");\n   29|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "file": "tests/slugify.test.ts",
+        "name": "lowercase > leaves digits unchanged while lowercasing letters",
+        "line": 31,
+        "code": "   31|   it(\"leaves digits unchanged while lowercasing letters\", () => {\n   32|     expect(slugify(\"ABC123\")).toBe(\"abc123\");\n   33|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces a single space with a hyphen",
+        "line": 37,
+        "code": "   37|   it(\"replaces a single space with a hyphen\", () => {\n   38|     expect(slugify(\"hello world\")).toBe(\"hello-world\");\n   39|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces a run of several spaces with a single hyphen",
+        "line": 41,
+        "code": "   41|   it(\"replaces a run of several spaces with a single hyphen\", () => {\n   42|     expect(slugify(\"hello     world\")).toBe(\"hello-world\");\n   43|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces tabs and newlines as whitespace",
+        "line": 45,
+        "code": "   45|   it(\"replaces tabs and newlines as whitespace\", () => {\n   46|     expect(slugify(\"hello\\tworld\\nagain\")).toBe(\"hello-world-again\");\n   47|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "line": 49,
+        "code": "   49|   it(\"replaces a mixed run of whitespace characters with a single hyphen\", () => {\n   50|     expect(slugify(\"hello \\t\\n  world\")).toBe(\"hello-world\");\n   51|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "file": "tests/slugify.test.ts",
+        "name": "whitespace > handles multiple separate whitespace runs",
+        "line": 53,
+        "code": "   53|   it(\"handles multiple separate whitespace runs\", () => {\n   54|     expect(slugify(\"a b  c   d\")).toBe(\"a-b-c-d\");\n   55|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > drops punctuation instead of replacing it",
+        "line": 59,
+        "code": "   59|   it(\"drops punctuation instead of replacing it\", () => {\n   60|     expect(slugify(\"Hello, World!\")).toBe(\"hello-world\");\n   61|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > drops characters between letters without inserting a hyphen",
+        "line": 63,
+        "code": "   63|   it(\"drops characters between letters without inserting a hyphen\", () => {\n   64|     expect(slugify(\"it's\")).toBe(\"its\");\n   65|     expect(slugify(\"a.b\")).toBe(\"ab\");\n   66|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > does not replace symbols with words",
+        "line": 68,
+        "code": "   68|   it(\"does not replace symbols with words\", () => {\n   69|     expect(slugify(\"salt&pepper\")).toBe(\"saltpepper\");\n   70|     expect(slugify(\"50%off\")).toBe(\"50off\");\n   71|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > removes a wide range of symbols",
+        "line": 73,
+        "code": "   73|   it(\"removes a wide range of symbols\", () => {\n   74|     expect(slugify(\"a!@#$%^&*()_+=[]{};:'\\\"<>,./?\\\\|`~b\")).toBe(\"ab\");\n   75|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > keeps letters, digits and hyphens",
+        "line": 77,
+        "code": "   77|   it(\"keeps letters, digits and hyphens\", () => {\n   78|     expect(slugify(\"well-known 2024\")).toBe(\"well-known-2024\");\n   79|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "file": "tests/slugify.test.ts",
+        "name": "strip > keeps existing hyphens between words",
+        "line": 81,
+        "code": "   81|   it(\"keeps existing hyphens between words\", () => {\n   82|     expect(slugify(\"state-of-the-art\")).toBe(\"state-of-the-art\");\n   83|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "line": 87,
+        "code": "   87|   it(\"does not start or end with a hyphen when input has surrounding whitespace\", () => {\n   88|     expect(slugify(\"  hello world  \")).toBe(\"hello-world\");\n   89|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "line": 91,
+        "code": "   91|   it(\"does not start or end with a hyphen when input has surrounding hyphens\", () => {\n   92|     expect(slugify(\"-hello-\")).toBe(\"hello\");\n   93|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > does not leave hyphens when surrounding punctuation is stripped",
+        "line": 95,
+        "code": "   95|   it(\"does not leave hyphens when surrounding punctuation is stripped\", () => {\n   96|     expect(slugify(\"! hello world ?\")).toBe(\"hello-world\");\n   97|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "file": "tests/slugify.test.ts",
+        "name": "trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "line": 99,
+        "code": "   99|   it(\"trims leading whitespace and trailing hyphens, and vice versa\", () => {\n  100|     expect(slugify(\"  hello--\")).toBe(\"hello\");\n  101|     expect(slugify(\"--hello  \")).toBe(\"hello\");\n  102|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > returns the slug unchanged when it fits within maxLength",
+        "line": 106,
+        "code": "  106|   it(\"returns the slug unchanged when it fits within maxLength\", () => {\n  107|     expect(slugify(\"hello world\", { maxLength: 20 })).toBe(\"hello-world\");\n  108|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > returns the slug unchanged when its length equals maxLength",
+        "line": 110,
+        "code": "  110|   it(\"returns the slug unchanged when its length equals maxLength\", () => {\n  111|     expect(slugify(\"hello world\", { maxLength: 11 })).toBe(\"hello-world\");\n  112|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > cuts at the last hyphen before the limit",
+        "line": 114,
+        "code": "  114|   it(\"cuts at the last hyphen before the limit\", () => {\n  115|     // \"hello-world-foo\" (15 chars); first 13 chars are \"hello-world-f\"\n  116|     expect(slugify(\"hello world foo\", { maxLength: 13 })).toBe(\"hello-world\");\n  117|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > cuts at the last hyphen, not the first",
+        "line": 119,
+        "code": "  119|   it(\"cuts at the last hyphen, not the first\", () => {\n  120|     // \"the-quick-brown-fox\"; first 12 chars are \"the-quick-br\"\n  121|     expect(slugify(\"The quick brown fox\", { maxLength: 12 })).toBe(\"the-quick\");\n  122|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > cuts at exactly maxLength when there is no hyphen",
+        "line": 124,
+        "code": "  124|   it(\"cuts at exactly maxLength when there is no hyphen\", () => {\n  125|     expect(slugify(\"abcdefghij\", { maxLength: 5 })).toBe(\"abcde\");\n  126|   });",
+        "truncated": false
+      },
+      {
+        "id": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "file": "tests/slugify.test.ts",
+        "name": "max-length > never returns more than maxLength characters",
+        "line": 128,
+        "code": "  128|   it(\"never returns more than maxLength characters\", () => {\n  129|     const title = \"The Quick Brown Fox Jumps Over The Lazy Dog\";\n  130|     for (let max = 1; max <= 50; max++) {\n  131|       expect(slugify(title, { maxLength: max }).length).toBeLessThanOrEqual(max);\n  132|     }\n  133|   });",
+        "truncated": false
+      }
+    ]
+  },
+  "expect": {
+    "conflicts": [
+      "lowercase"
+    ]
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "slugify",
+    "requirement": "lowercase",
+    "asked": "Change the expected result in one existing test for this requirement so that the test expects something the requirement rules out, as if you had misread it: \"slugify(title) returns the title with every letter in lowercase.\". Keep the test's name. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "requirements": [
+      {
+        "requirementId": "interface",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+            "covers": 0.95,
+            "asserts": 0.53
+          },
+          {
+            "testId": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+            "covers": 0.89,
+            "asserts": 0.49
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+            "covers": 0.87,
+            "asserts": 0.62
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+            "covers": 0.87,
+            "asserts": 0.56
+          },
+          {
+            "testId": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+            "covers": 0.86,
+            "asserts": 0.34
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+            "covers": 0.84,
+            "asserts": 0.48
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+            "covers": 0.83,
+            "asserts": 0.44
+          },
+          {
+            "testId": "tests/slugify.test.ts::interface > accepts an empty options object",
+            "covers": 0.8,
+            "asserts": 0.47
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+            "covers": 0.8,
+            "asserts": 0.48
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+            "covers": 0.77,
+            "asserts": 0.55
+          }
+        ],
+        "best": 0.95
+      },
+      {
+        "requirementId": "lowercase",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/slugify.test.ts::lowercase > lowercases every letter",
+            "covers": 0.97,
+            "asserts": 0.89
+          },
+          {
+            "testId": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+            "covers": 0.93,
+            "asserts": 0.81
+          }
+        ],
+        "best": 0.97
+      },
+      {
+        "requirementId": "whitespace",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+            "covers": 0.98,
+            "asserts": 0.85
+          },
+          {
+            "testId": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+            "covers": 0.97,
+            "asserts": 0.8
+          },
+          {
+            "testId": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+            "covers": 0.97,
+            "asserts": 0.85
+          },
+          {
+            "testId": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+            "covers": 0.93,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+            "covers": 0.81,
+            "asserts": 0.47
+          },
+          {
+            "testId": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+            "covers": 0.7,
+            "asserts": 0.71
+          }
+        ],
+        "best": 0.98
+      },
+      {
+        "requirementId": "strip",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/slugify.test.ts::strip > does not replace symbols with words",
+            "covers": 0.92,
+            "asserts": 0.78
+          },
+          {
+            "testId": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+            "covers": 0.91,
+            "asserts": 0.81
+          },
+          {
+            "testId": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+            "covers": 0.9,
+            "asserts": 0.79
+          },
+          {
+            "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+            "covers": 0.79,
+            "asserts": 0.6
+          }
+        ],
+        "best": 0.92
+      },
+      {
+        "requirementId": "trim",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+            "covers": 0.97,
+            "asserts": 0.79
+          },
+          {
+            "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+            "covers": 0.95,
+            "asserts": 0.65
+          },
+          {
+            "testId": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+            "covers": 0.86,
+            "asserts": 0.72
+          },
+          {
+            "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+            "covers": 0.72,
+            "asserts": 0.4
+          }
+        ],
+        "best": 0.97
+      },
+      {
+        "requirementId": "max-length",
+        "status": "covered",
+        "route": "none",
+        "tests": [
+          {
+            "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+            "covers": 0.98,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+            "covers": 0.97,
+            "asserts": 0.82
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+            "covers": 0.86,
+            "asserts": 0.66
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+            "covers": 0.82,
+            "asserts": 0.43
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+            "covers": 0.8,
+            "asserts": 0.59
+          },
+          {
+            "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+            "covers": 0.78,
+            "asserts": 0.29
+          }
+        ],
+        "best": 0.98
+      }
+    ],
+    "conflicts": [
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "requirementId": "lowercase",
+        "contradicts": 0.93
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "requirementId": "strip",
+        "contradicts": 0.74
+      }
+    ],
+    "orphans": [
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "best": 0.31
+      }
+    ],
+    "pairs": [
+      {
+        "testId": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "requirementId": "interface",
+        "covers": 0.86,
+        "asserts": 0.34,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "requirementId": "lowercase",
+        "covers": 0.04,
+        "asserts": 0.14,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "requirementId": "whitespace",
+        "covers": 0.04,
+        "asserts": 0.14,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "requirementId": "strip",
+        "covers": 0.04,
+        "asserts": 0.11,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "requirementId": "trim",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > exports a slugify function from src/slugify.ts",
+        "requirementId": "max-length",
+        "covers": 0.03,
+        "asserts": 0.13,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "requirementId": "interface",
+        "covers": 0.89,
+        "asserts": 0.49,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "requirementId": "lowercase",
+        "covers": 0.32,
+        "asserts": 0.31,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "requirementId": "whitespace",
+        "covers": 0.05,
+        "asserts": 0.11,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "requirementId": "strip",
+        "covers": 0.13,
+        "asserts": 0.2,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "requirementId": "trim",
+        "covers": 0.07,
+        "asserts": 0.1,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts a title with no options and returns a string",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "requirementId": "interface",
+        "covers": 0.95,
+        "asserts": 0.53,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.19,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "requirementId": "strip",
+        "covers": 0.02,
+        "asserts": 0.12,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "requirementId": "trim",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an options object with maxLength",
+        "requirementId": "max-length",
+        "covers": 0.69,
+        "asserts": 0.18,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "requirementId": "interface",
+        "covers": 0.8,
+        "asserts": 0.47,
+        "contradicts": 0.18
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "requirementId": "lowercase",
+        "covers": 0.14,
+        "asserts": 0.43,
+        "contradicts": 0.4
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "requirementId": "whitespace",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "requirementId": "strip",
+        "covers": 0.07,
+        "asserts": 0.19,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "requirementId": "trim",
+        "covers": 0.08,
+        "asserts": 0.11,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::interface > accepts an empty options object",
+        "requirementId": "max-length",
+        "covers": 0.03,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "requirementId": "interface",
+        "covers": 0.42,
+        "asserts": 0.37,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "requirementId": "lowercase",
+        "covers": 0.97,
+        "asserts": 0.89,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "requirementId": "strip",
+        "covers": 0.03,
+        "asserts": 0.18,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "requirementId": "trim",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases every letter",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "requirementId": "interface",
+        "covers": 0.37,
+        "asserts": 0.41,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "requirementId": "lowercase",
+        "covers": 0.81,
+        "asserts": 0.71,
+        "contradicts": 0.93
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "requirementId": "whitespace",
+        "covers": 0.16,
+        "asserts": 0.38,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "requirementId": "strip",
+        "covers": 0.05,
+        "asserts": 0.2,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "requirementId": "trim",
+        "covers": 0.04,
+        "asserts": 0.12,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > lowercases mixed-case input",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "requirementId": "interface",
+        "covers": 0.29,
+        "asserts": 0.33,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "requirementId": "lowercase",
+        "covers": 0.93,
+        "asserts": 0.81,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "requirementId": "strip",
+        "covers": 0.07,
+        "asserts": 0.18,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "requirementId": "trim",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::lowercase > leaves digits unchanged while lowercasing letters",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "requirementId": "interface",
+        "covers": 0.48,
+        "asserts": 0.38,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.25,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "requirementId": "whitespace",
+        "covers": 0.81,
+        "asserts": 0.47,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "requirementId": "strip",
+        "covers": 0.07,
+        "asserts": 0.17,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "requirementId": "trim",
+        "covers": 0.05,
+        "asserts": 0.1,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a single space with a hyphen",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "requirementId": "interface",
+        "covers": 0.42,
+        "asserts": 0.32,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "requirementId": "lowercase",
+        "covers": 0.02,
+        "asserts": 0.19,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "requirementId": "whitespace",
+        "covers": 0.97,
+        "asserts": 0.8,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "requirementId": "strip",
+        "covers": 0.06,
+        "asserts": 0.15,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "requirementId": "trim",
+        "covers": 0.03,
+        "asserts": 0.1,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a run of several spaces with a single hyphen",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "requirementId": "interface",
+        "covers": 0.22,
+        "asserts": 0.31,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.27,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "requirementId": "whitespace",
+        "covers": 0.93,
+        "asserts": 0.82,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "requirementId": "strip",
+        "covers": 0.16,
+        "asserts": 0.21,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "requirementId": "trim",
+        "covers": 0.05,
+        "asserts": 0.14,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces tabs and newlines as whitespace",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "requirementId": "interface",
+        "covers": 0.29,
+        "asserts": 0.29,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "requirementId": "lowercase",
+        "covers": 0.02,
+        "asserts": 0.23,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "requirementId": "whitespace",
+        "covers": 0.98,
+        "asserts": 0.85,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "requirementId": "strip",
+        "covers": 0.06,
+        "asserts": 0.15,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "requirementId": "trim",
+        "covers": 0.04,
+        "asserts": 0.12,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > replaces a mixed run of whitespace characters with a single hyphen",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "requirementId": "interface",
+        "covers": 0.26,
+        "asserts": 0.33,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.16,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "requirementId": "whitespace",
+        "covers": 0.97,
+        "asserts": 0.85,
+        "contradicts": 0.03
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "requirementId": "strip",
+        "covers": 0.08,
+        "asserts": 0.16,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "requirementId": "trim",
+        "covers": 0.05,
+        "asserts": 0.13,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::whitespace > handles multiple separate whitespace runs",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "requirementId": "interface",
+        "covers": 0.29,
+        "asserts": 0.37,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "requirementId": "lowercase",
+        "covers": 0.14,
+        "asserts": 0.59,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "requirementId": "whitespace",
+        "covers": 0.06,
+        "asserts": 0.38,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "requirementId": "strip",
+        "covers": 0.85,
+        "asserts": 0.69,
+        "contradicts": 0.74
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "requirementId": "trim",
+        "covers": 0.06,
+        "asserts": 0.14,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops punctuation instead of replacing it",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "requirementId": "interface",
+        "covers": 0.17,
+        "asserts": 0.39,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "requirementId": "lowercase",
+        "covers": 0.04,
+        "asserts": 0.23,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.13,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "requirementId": "strip",
+        "covers": 0.91,
+        "asserts": 0.81,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "requirementId": "trim",
+        "covers": 0.04,
+        "asserts": 0.1,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > drops characters between letters without inserting a hyphen",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "requirementId": "interface",
+        "covers": 0.16,
+        "asserts": 0.39,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "requirementId": "lowercase",
+        "covers": 0.04,
+        "asserts": 0.29,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.17,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "requirementId": "strip",
+        "covers": 0.92,
+        "asserts": 0.78,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "requirementId": "trim",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > does not replace symbols with words",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.06,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "requirementId": "interface",
+        "covers": 0.25,
+        "asserts": 0.34,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.17,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "requirementId": "strip",
+        "covers": 0.9,
+        "asserts": 0.79,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "requirementId": "trim",
+        "covers": 0.06,
+        "asserts": 0.14,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > removes a wide range of symbols",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "requirementId": "interface",
+        "covers": 0.5,
+        "asserts": 0.39,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "requirementId": "lowercase",
+        "covers": 0.09,
+        "asserts": 0.29,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "requirementId": "whitespace",
+        "covers": 0.7,
+        "asserts": 0.71,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "requirementId": "strip",
+        "covers": 0.66,
+        "asserts": 0.46,
+        "contradicts": 0.15
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "requirementId": "trim",
+        "covers": 0.07,
+        "asserts": 0.14,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps letters, digits and hyphens",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.11,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "requirementId": "interface",
+        "covers": 0.31,
+        "asserts": 0.3,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "requirementId": "lowercase",
+        "covers": 0.04,
+        "asserts": 0.28,
+        "contradicts": 0.16
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "requirementId": "whitespace",
+        "covers": 0.06,
+        "asserts": 0.13,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "requirementId": "strip",
+        "covers": 0.3,
+        "asserts": 0.36,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "requirementId": "trim",
+        "covers": 0.05,
+        "asserts": 0.11,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::strip > keeps existing hyphens between words",
+        "requirementId": "max-length",
+        "covers": 0.04,
+        "asserts": 0.1,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "requirementId": "interface",
+        "covers": 0.34,
+        "asserts": 0.3,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.31,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "requirementId": "whitespace",
+        "covers": 0.36,
+        "asserts": 0.59,
+        "contradicts": 0.12
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "requirementId": "strip",
+        "covers": 0.07,
+        "asserts": 0.19,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "requirementId": "trim",
+        "covers": 0.95,
+        "asserts": 0.65,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding whitespace",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "requirementId": "interface",
+        "covers": 0.48,
+        "asserts": 0.32,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.25,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "requirementId": "whitespace",
+        "covers": 0.03,
+        "asserts": 0.14,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "requirementId": "strip",
+        "covers": 0.09,
+        "asserts": 0.27,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "requirementId": "trim",
+        "covers": 0.97,
+        "asserts": 0.79,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not start or end with a hyphen when input has surrounding hyphens",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "requirementId": "interface",
+        "covers": 0.3,
+        "asserts": 0.39,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "requirementId": "lowercase",
+        "covers": 0.04,
+        "asserts": 0.33,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "requirementId": "whitespace",
+        "covers": 0.18,
+        "asserts": 0.36,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "requirementId": "strip",
+        "covers": 0.79,
+        "asserts": 0.6,
+        "contradicts": 0.13
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "requirementId": "trim",
+        "covers": 0.72,
+        "asserts": 0.4,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > does not leave hyphens when surrounding punctuation is stripped",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "requirementId": "interface",
+        "covers": 0.28,
+        "asserts": 0.36,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.22,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "requirementId": "whitespace",
+        "covers": 0.11,
+        "asserts": 0.37,
+        "contradicts": 0.54
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "requirementId": "strip",
+        "covers": 0.06,
+        "asserts": 0.21,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "requirementId": "trim",
+        "covers": 0.86,
+        "asserts": 0.72,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::trim > trims leading whitespace and trailing hyphens, and vice versa",
+        "requirementId": "max-length",
+        "covers": 0.02,
+        "asserts": 0.07,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "requirementId": "interface",
+        "covers": 0.84,
+        "asserts": 0.48,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "requirementId": "lowercase",
+        "covers": 0.04,
+        "asserts": 0.31,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "requirementId": "whitespace",
+        "covers": 0.18,
+        "asserts": 0.59,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "requirementId": "strip",
+        "covers": 0.03,
+        "asserts": 0.19,
+        "contradicts": 0.09
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "requirementId": "trim",
+        "covers": 0.04,
+        "asserts": 0.13,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when it fits within maxLength",
+        "requirementId": "max-length",
+        "covers": 0.78,
+        "asserts": 0.29,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "requirementId": "interface",
+        "covers": 0.8,
+        "asserts": 0.48,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.33,
+        "contradicts": 0.08
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "requirementId": "whitespace",
+        "covers": 0.09,
+        "asserts": 0.6,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "requirementId": "strip",
+        "covers": 0.03,
+        "asserts": 0.16,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "requirementId": "trim",
+        "covers": 0.04,
+        "asserts": 0.13,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > returns the slug unchanged when its length equals maxLength",
+        "requirementId": "max-length",
+        "covers": 0.82,
+        "asserts": 0.43,
+        "contradicts": 0.11
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "requirementId": "interface",
+        "covers": 0.87,
+        "asserts": 0.62,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "requirementId": "lowercase",
+        "covers": 0.02,
+        "asserts": 0.24,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "requirementId": "whitespace",
+        "covers": 0.07,
+        "asserts": 0.43,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "requirementId": "strip",
+        "covers": 0.03,
+        "asserts": 0.13,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "requirementId": "trim",
+        "covers": 0.06,
+        "asserts": 0.19,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen before the limit",
+        "requirementId": "max-length",
+        "covers": 0.98,
+        "asserts": 0.82,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "requirementId": "interface",
+        "covers": 0.77,
+        "asserts": 0.55,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "requirementId": "lowercase",
+        "covers": 0.03,
+        "asserts": 0.6,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "requirementId": "whitespace",
+        "covers": 0.06,
+        "asserts": 0.33,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "requirementId": "strip",
+        "covers": 0.03,
+        "asserts": 0.2,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "requirementId": "trim",
+        "covers": 0.05,
+        "asserts": 0.19,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at the last hyphen, not the first",
+        "requirementId": "max-length",
+        "covers": 0.97,
+        "asserts": 0.82,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "requirementId": "interface",
+        "covers": 0.87,
+        "asserts": 0.56,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "requirementId": "lowercase",
+        "covers": 0.02,
+        "asserts": 0.19,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.08,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "requirementId": "strip",
+        "covers": 0.03,
+        "asserts": 0.13,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "requirementId": "trim",
+        "covers": 0.03,
+        "asserts": 0.09,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > cuts at exactly maxLength when there is no hyphen",
+        "requirementId": "max-length",
+        "covers": 0.8,
+        "asserts": 0.59,
+        "contradicts": 0.07
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "requirementId": "interface",
+        "covers": 0.83,
+        "asserts": 0.44,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "requirementId": "lowercase",
+        "covers": 0.02,
+        "asserts": 0.09,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "requirementId": "whitespace",
+        "covers": 0.02,
+        "asserts": 0.12,
+        "contradicts": 0.05
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "requirementId": "strip",
+        "covers": 0.02,
+        "asserts": 0.14,
+        "contradicts": 0.06
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "requirementId": "trim",
+        "covers": 0.01,
+        "asserts": 0.09,
+        "contradicts": 0.04
+      },
+      {
+        "testId": "tests/slugify.test.ts::max-length > never returns more than maxLength characters",
+        "requirementId": "max-length",
+        "covers": 0.86,
+        "asserts": 0.66,
+        "contradicts": 0.1
+      }
+    ],
+    "failures": [],
+    "truncatedTests": [],
+    "usage": {
+      "requests": 28,
+      "questions": 504,
+      "inputTokens": 90134,
+      "outputTokens": 9520
+    }
+  }
+}

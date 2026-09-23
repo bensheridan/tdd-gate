@@ -234,6 +234,78 @@ evidence the mechanism works, not as a measured accuracy. The thresholds (`cover
 eval set from real agent runs, as semantic-lint's `eval-history` does, and remember that pairs
 near a threshold flip between runs.
 
+## The eval set
+
+`eval/` measures the gates on work from real agent runs rather than hand-made snippets:
+
+```bash
+eval/harvest.sh <workspace dir> [plan ...]      # build cases (runs real agents; minutes per plan)
+node dist/cli.js eval --cases eval/cases        # re-run today's gates and score them
+node dist/cli.js eval --cases eval/cases --recorded     # score the saved outputs, no API calls
+node dist/cli.js eval --cases eval/cases --unlabeled    # what the gates say about unlabeled cases
+```
+
+For each plan in `eval/plans/`, `harvest.sh` makes a repository containing only the plan, runs the
+orchestrator with `--record` (every gate decision is saved as an **unlabeled** case), then runs
+`tdd-gate harvest` on the finished branch. Harvest asks a real agent for one specific change at a
+time, checks it mechanically, and labels it **by construction**:
+
+| Kind | Asked for | Checked | Labeled cases |
+|---|---|---|---|
+| `code-bug` (per requirement) | a realistic bug that breaks requirement R | some test fails | blame → code agent; gaming and drift quiet |
+| `test-contradict` (per requirement) | a test changed to expect what R rules out | some test fails | blame → test agent; coverage conflict with R; weakening quiet |
+| `special-case`, `test-aware`, `swallowed-error` | that kind of gaming | | gaming flags that rule |
+| `add-feature` | a small feature the plan does not ask for | tests still pass | drift flags it; gaming quiet |
+| `refactor`, `test-refactor` | readability only | tests still pass | drift, gaming and weakening quiet |
+| `loosen`, `skip`, `delete-assertion` | that kind of weakening | | weakening flags that rule |
+
+A mutant that fails its check is discarded and reported (for example a bug no test catches, which
+is itself a finding about the tests). A case file holds the plan, the exact gate input, the label,
+its source, and the gate output when recorded, so the set can be re-scored after any change to
+questions, wording or thresholds. Eval reports precision and recall per rule and accuracy per
+route, separately for `construction` and `review` labels, and never scores unlabeled cases. To
+label one, set `expect` and `"labelSource": "review"` in its file.
+
+Construction labels are only as good as the assumption behind them: see the strip bug below, which
+drift flagged as extra behaviour, arguably correctly.
+
+### First results (jev-1.13, recorded outputs, construction labels)
+
+Three plans (`slugify`, `duration`, `cart`), each run to green by two Claude Code agents, then
+harvested: **135 cases, 114 labeled by construction, 21 unlabeled natural cases**, 5 mutants discarded.
+
+| Gate / rule | Result | Reading |
+|---|---|---|
+| weakening `loosened-assertion`, `skipped-test` | 3/3 caught each, no false alarms | strong |
+| gaming `special-case`, `swallowed-error` | 3/3 caught each; 1 false alarm (an added feature read as special-casing) | strong |
+| blame route | 35/37 correct | strong; both misses need arithmetic (below) |
+| coverage conflict | 12/15 found, no false alarms | good; same arithmetic misses |
+| drift `unrequested-behaviour` | 3/3 features caught, but 4 false alarms on **bugs** | a bug that lets extra input through reads as extra behaviour; arguably right once (the strip bug) |
+| weakening `removed-assertion` | 1/3 caught, 4 false alarms | **weak**: fires when an assertion is *replaced* (loosened, or its expected value changed); a warning, so it only reaches a person |
+| gaming `test-aware` | no positives | the agent declined all three requests to write test-detecting code, so there is nothing to score |
+
+What the misses have in common:
+
+- **Arithmetic.** The worst blame and coverage misses need counting or computing: whether
+  `"the"` or `"the-quick"` is the right cut of `"the-quick-brown-fox"` at 12 characters, or
+  what a cart sums to. Jev does not count reliably (its documented limit). A fix belongs in code,
+  for example running the requirement's example values, not in question wording.
+- **Replaced versus removed.** `removed-assertion` cannot tell a deleted assertion from a changed
+  one. Next step: give it the added lines' assertions explicitly, or ask it only about hunks whose
+  removed assertions have no counterpart in code's own count of `expect(` calls.
+- **Mutants that survived** are findings about the agent-written tests: a lowercase bug in slugify
+  and a discount bug in cart broke no test, although coverage rated both requirements covered.
+
+Two things the runs taught the orchestrator (both fixed): the test agent puts tests beside the
+source unless ownership is enforced, and a plan whose requirements contradict each other literally
+(`sum` stated as absolute while `discount` changes it; `units` excluding the bare numbers that
+`bare-seconds` allows) makes the test agent loop. The orchestrator now stops and names the two
+requirements when a conflict survives a fix round; the recorded natural cases of those loops are
+kept, unlabeled, as material for review. The plans were rewritten to scope each requirement.
+
+These numbers are small counts on three small plans, and harvesting and scoring were done while
+building the tool. Treat them as where to look next, not as accuracy figures.
+
 ## Writing requirements
 
 - One behaviour per requirement, stated as the exact condition. When something is easy to confuse,
@@ -257,5 +329,5 @@ a person).
 
 ## Not built yet
 
-- **eval**: labelled cases from real agent runs, as semantic-lint's `eval` and `eval-history` do.
-  The examples here are hand-made and much more blatant than what an agent will produce.
+- **review tooling**: labeling unlabeled cases means editing JSON; a review page would be faster.
+- **more plans**: three small plans is a start, not a benchmark.

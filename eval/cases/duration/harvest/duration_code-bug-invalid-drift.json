@@ -1,0 +1,92 @@
+{
+  "id": "duration/code-bug-invalid-drift",
+  "kind": "code-bug",
+  "plan": {
+    "requirements": [
+      {
+        "id": "interface",
+        "text": "The file src/duration.ts exports a function parseDuration(text: string): number that returns a number of seconds."
+      },
+      {
+        "id": "units",
+        "text": "For input made of components in the order the order requirement allows, each a non-negative integer followed by a unit, h (hours), m (minutes) or s (seconds), parseDuration returns the total in seconds: \"1h30m\" is 5400 and \"2m5s\" is 125. (A string with no unit at all is covered by the bare-seconds requirement.)"
+      },
+      {
+        "id": "order",
+        "text": "Components must appear in the order h, m, s, with each unit at most once and no spaces; \"30m1h\", \"1h1h\" and \"1h 30m\" make parseDuration throw an Error."
+      },
+      {
+        "id": "bare-seconds",
+        "text": "A string that is only a non-negative integer, with no unit, is that many seconds (\"90\" is 90)."
+      },
+      {
+        "id": "empty",
+        "text": "An empty string makes parseDuration throw an Error."
+      },
+      {
+        "id": "invalid",
+        "text": "Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error."
+      }
+    ],
+    "thresholds": {
+      "covered": 0.7,
+      "possible": 0.35,
+      "strong": 0.6,
+      "route": 0.6,
+      "flag": 0.7
+    }
+  },
+  "input": {
+    "gate": "drift",
+    "diff": "diff --git a/src/duration.ts b/src/duration.ts\nindex d1789d3..8f9093b 100644\n--- a/src/duration.ts\n+++ b/src/duration.ts\n@@ -1,12 +1,12 @@\n const BARE_SECONDS = /^\\d+$/;\n-const COMPONENTS = /^(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?$/;\n+const COMPONENTS = /^(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?$/i;\n \n export function parseDuration(text: string): number {\n   if (BARE_SECONDS.test(text)) {\n     return Number(text);\n   }\n \n   const match = COMPONENTS.exec(text);\n   if (text === \"\" || match === null) {\n     throw new Error(`Invalid duration: \"${text}\"`);\n   }\n"
+  },
+  "expect": {
+    "flagged": []
+  },
+  "labelSource": "construction",
+  "meta": {
+    "plan": "duration",
+    "requirement": "invalid",
+    "asked": "Introduce one realistic bug into the implementation so that this requirement is no longer met for some inputs: \"Any other input (unknown units, signs, decimal points, letters or other characters) makes parseDuration throw an Error.\". Every other requirement must keep working. Change nothing else, and do not explain the change in comments or names.",
+    "agent": "claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep"
+  },
+  "recorded": {
+    "gate": "drift",
+    "findings": [
+      {
+        "gate": "drift",
+        "file": "src/duration.ts",
+        "startLine": 2,
+        "endLine": 2,
+        "ruleId": "unrequested-behaviour",
+        "title": "Behaviour no requirement asks for",
+        "severity": "error",
+        "probability": 0.71,
+        "band": "violation",
+        "route": "code-agent",
+        "message": "Adds behaviour no requirement asks for (p=0.71): remove it, or add the requirement to the plan"
+      }
+    ],
+    "failures": [],
+    "truncated": [],
+    "stats": {
+      "hunks": 1,
+      "hunksJudged": 1,
+      "skipped": 0
+    },
+    "usage": {
+      "requests": 1,
+      "questions": 8,
+      "inputTokens": 1974,
+      "outputTokens": 147
+    },
+    "trace": [
+      {
+        "file": "src/duration.ts",
+        "startLine": 2,
+        "endLine": 2,
+        "requirements": []
+      }
+    ]
+  }
+}
