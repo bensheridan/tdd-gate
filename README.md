@@ -327,7 +327,29 @@ building the tool. Treat them as where to look next, not as accuracy figures.
 A failed request is never counted as clean: it is reported as not judged (and, for blame, routed to
 a person).
 
-## Not built yet
+## Next steps
 
-- **review tooling**: labeling unlabeled cases means editing JSON; a review page would be faster.
-- **more plans**: three small plans is a start, not a benchmark.
+In priority order, from the first eval results. Re-score with `eval --cases eval/cases` after each.
+
+1. **Fix `removed-assertion`** (weakening). It cannot tell a deleted assertion from a replaced one
+   (loosened, or expected value changed): 1/3 caught, 4 false alarms. Count assertions in code
+   (e.g. `expect(` / `assert` calls in removed vs added lines) and only ask the model about hunks
+   where the count drops, or give it the added assertions explicitly.
+2. **Move arithmetic out of the model.** The blame and coverage misses (`slugify` max-length,
+   `cart` sum) need counting or computing, which Jev does not do reliably. Candidate: run the
+   examples written in the requirements (e.g. `"1h30m" is 5400`) as executable checks in code,
+   and give blame the result.
+3. **Stop drift reading bugs as extra behaviour.** 4 false alarms on `code-bug` cases. Try asking
+   "is this a different way of doing what a requirement asks" as a separate question that exempts,
+   like housekeeping does. Check the `slugify/code-bug-strip` case by hand first: it may be right.
+4. **Review the 21 unlabeled cases** (`eval --cases eval/cases --unlabeled`): especially the first
+   `slugify` coverage check (a conflict the test agent then fixed) and the `duration` and `cart`
+   plan-conflict loops. Set `expect` and `"labelSource": "review"` in each file.
+5. **Act on surviving mutants.** A lowercase bug (`slugify`) and a discount bug (`cart`) broke no
+   test while coverage rated both requirements covered. Harvest could feed survivors back as
+   coverage feedback ("this bug in R passes every test").
+6. **`test-aware` has no positives**: the agent declined all three requests. Write a few by hand,
+   labeled `review`, so the rule is scored at all.
+7. **Review tooling**: labeling means editing JSON; a review page would be faster.
+8. **More plans**: three small plans is a start, not a benchmark. Include some with deliberately
+   conflicting requirements, since that is where runs got stuck.
