@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractTests, isTestFile } from "../src/tests.js";
+import { extractTests, findTestFiles, isTestFile } from "../src/tests.js";
 
 describe("extractTests (JS/TS)", () => {
     const src = `import { it } from "vitest";
@@ -60,5 +60,11 @@ describe("isTestFile", () => {
     it("recognises common conventions", () => {
         expect(["a.test.ts", "src/b.spec.jsx", "tests/test_c.py", "d_test.py"].every(isTestFile)).toBe(true);
         expect(["src/a.ts", "testing.py", "contest.ts"].some(isTestFile)).toBe(false);
+    });
+});
+
+describe("findTestFiles", () => {
+    it("treats a missing path as having no tests", () => {
+        expect(findTestFiles(["does-not-exist"])).toEqual([]);
     });
 });

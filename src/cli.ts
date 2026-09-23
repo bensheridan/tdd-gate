@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { blameExitCode, blameFailures, candidateHunks, matchTest } from "./blame.js";
 import { createClient } from "./client.js";
 import { checkCoverage, coverageExitCode } from "./coverage.js";
 import { applicableDiffRules, checkDiff, diffExitCode, gateHunks, type Gate } from "./diffgates.js";
 import { checkDrift } from "./drift.js";
+import { codeAgentPrompt, commandAgent, DEFAULT_AGENT_COMMAND, testAgentPrompt } from "./agents.js";
+import { commandTestRunner, orchestrate, typesafeGates } from "./orchestrate.js";
 import { parseDiff } from "./diff.js";
 import { loadJunit } from "./junit.js";
 import { formatBlame, formatCoverage, formatDiffGate, formatJson } from "./report.js";
@@ -34,6 +37,14 @@ Usage:
       Does the code agent's change (non-test files) add behaviour no requirement asks for?
       Also prints which requirements each changed hunk serves.
 
+  tdd-gate run --requirements <yml> --test-command "<cmd writing JUnit to {junit}>"
+               [--repo <dir>] [--tests <path in repo>...] [--agent <cmd>]
+               [--test-agent <cmd>] [--code-agent <cmd>] [--max-turns <n>] [--link <path>...]
+      Reference orchestrator: runs a test agent and a code agent against the plan through all
+      the gates, committing accepted turns to a new tdd-gate/run-* branch in the repo. Agents
+      get the prompt on stdin in a throwaway worktree; the code agent's has no test files.
+      Default agent: ${DEFAULT_AGENT_COMMAND}
+
   <diff> is --diff <file|-> or --base <ref> [--head <ref>] (git diff base...head).
   --code-diff is accepted as another name for --diff. --requirements supplies thresholds.
 
@@ -52,18 +63,19 @@ Exit codes:
   weakening 0 nothing flagged, 1 a loosened or skipped test, 2 not judged / bad input
             (removed assertions and deleted test files are reported for a person, never fail)
   drift     0 nothing flagged, 1 unrequested behaviour, 2 not judged / bad input
-            (hunks no requirement needs are reported for a person, never fail)`;
+            (hunks no requirement needs are reported for a person, never fail)
+  run       0 all tests pass, 1 stopped for a person or out of turns, 2 error / bad input`;
 
 interface Args {
-    command: "coverage" | "blame" | "drift" | Gate;
+    command: "coverage" | "blame" | "drift" | "run" | Gate;
     flags: Map<string, string[]>;
     bools: Set<string>;
 }
 
 function parseArgs(argv: string[]): Args {
     const [command, ...rest] = argv;
-    if (!["coverage", "blame", "gaming", "weakening", "drift"].includes(command)) {
-        throw new Error(`Unknown command "${command ?? ""}". Use coverage, blame, gaming, weakening or drift (see --help).`);
+    if (!["coverage", "blame", "gaming", "weakening", "drift", "run"].includes(command)) {
+        throw new Error(`Unknown command "${command ?? ""}". Use coverage, blame, gaming, weakening, drift or run (see --help).`);
     }
     const flags = new Map<string, string[]>();
     const bools = new Set<string>();
@@ -145,6 +157,50 @@ async function main(): Promise<number> {
     }
 
     const plan = loadPlan(need(args, "requirements"));
+
+    if (args.command === "run") {
+        const repo = resolve(str(args, "repo") ?? ".");
+        const testCommand = need(args, "test-command");
+        if (!testCommand.includes("{junit}")) throw new Error("--test-command must write a JUnit report to {junit}, e.g. \"npx vitest run --reporter=junit --outputFile={junit}\".");
+        const agentCmd = str(args, "agent") ?? DEFAULT_AGENT_COMMAND;
+        const testAgentCmd = str(args, "test-agent") ?? agentCmd;
+        const codeAgentCmd = str(args, "code-agent") ?? agentCmd;
+        const maxTurns = Number(str(args, "max-turns") ?? 12);
+        if (!Number.isInteger(maxTurns) || maxTurns < 1) throw new Error("--max-turns must be a positive integer.");
+        const tests = testPaths.length ? testPaths : ["."];
+        const link = args.flags.get("link") ?? ["node_modules"];
+        if (dryRun) {
+            console.log(`repo:          ${repo}\ntests:         ${tests.join(", ")}\ntest command:  ${testCommand}\ntest agent:    ${testAgentCmd}\ncode agent:    ${codeAgentCmd}\nmax turns:     ${maxTurns}\nlinked:        ${link.join(", ")}`);
+            console.log(`\n--- first test-agent prompt ---\n${testAgentPrompt(plan.requirements, [], "files named *.test.* / *.spec.*, test_*.py or *_test.py", testCommand)}`);
+            console.log(`--- first code-agent prompt ---\n${codeAgentPrompt(plan.requirements, [])}`);
+            console.log("Nothing was run.");
+            return 0;
+        }
+        const log = (line: string) => console.error(`[tdd-gate] ${line}`);
+        const result = await orchestrate({
+            repo,
+            plan,
+            testPaths: tests,
+            agents: { "test-agent": commandAgent(testAgentCmd), "code-agent": commandAgent(codeAgentCmd) },
+            gates: typesafeGates(createClient(), plan, concurrency),
+            runTests: commandTestRunner(testCommand),
+            testCommand,
+            maxTurns,
+            link,
+            log,
+        });
+        if (format === "json") console.log(formatJson(result));
+        else {
+            for (const t of result.turns) {
+                console.log(`turn ${t.n}  ${t.role.padEnd(10)} ${t.outcome}${t.commit ? ` ${t.commit.slice(0, 7)}` : ""}`);
+                for (const f of t.feedback) for (const i of f.items) console.log(`          -> ${f.role}: ${i}`);
+            }
+            for (const n of result.notes) console.log(`NOTE ${n}`);
+            for (const r of result.reasons) console.log(`${result.status === "error" ? "ERROR" : "NEEDS YOU"} ${r}`);
+            console.log(`\n${result.status}: ${result.turns.length} turn(s). Commits are on branch ${result.branch}.`);
+        }
+        return result.status === "done" ? 0 : result.status === "error" ? 2 : 1;
+    }
 
     if (args.command === "drift") {
         const diff = readDiff(args);

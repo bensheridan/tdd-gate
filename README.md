@@ -15,6 +15,7 @@ whether code is correct; the test runner does that. It answers the questions the
   Loosened, skipped or removed assertions, deleted test files.
 - **drift**: does the code agent's change add behaviour no requirement asks for? It also traces
   each changed hunk to the requirements it serves.
+- **run**: a reference orchestrator that drives two real agents through all five gates.
 
 Each judgment is a [TypeSafe](https://docs.typesafe.ai) System One (Jev) question about one test
 and one requirement, answered with a probability. Code builds the matrix, applies the thresholds
@@ -63,10 +64,60 @@ plan ──> requirements.yml (one testable behaviour each, with an id)
                      └────────────────────────┘ ambiguous / setup_error / low confidence -> human
 ```
 
-The orchestrator is your code: it reads the JSON, sends each item to the agent named in `route`,
-and loops until coverage exits 0 and the tests pass. `tdd-gate` never contacts an agent itself.
-Keeping the code agent away from the tests matters: an agent that can see the tests writes code
-to pass them, and then a failing test no longer tells you anything about the plan.
+Each gate reads files and diffs and prints JSON; it never contacts an agent itself. The loop is
+the orchestrator's job, and `tdd-gate run` is a reference one (below). Keeping the code agent away
+from the tests matters: an agent that can see the tests writes code to pass them, and then a
+failing test no longer tells you anything about the plan.
+
+## The reference orchestrator
+
+```bash
+tdd-gate run --repo path/to/project --requirements requirements.yml --tests tests \
+  --test-command "npx vitest run --reporter=junit --outputFile={junit}"
+```
+
+- **Isolation by construction.** Each agent turn happens in a throwaway git worktree. The code
+  agent's worktree has every test file deleted, so it cannot read them. `node_modules` (or
+  whatever `--link` names) is symlinked in.
+- **Ownership.** After a turn, only files the agent owns are kept: test files for the test agent,
+  everything else for the code agent. Anything else it touched is discarded and it is told so.
+- **Gates before commits.** A code turn goes through gaming and drift; a test turn, once code
+  exists, through weakening. A rejected turn is never applied: its findings go back to the same
+  agent. Accepted turns are committed to a new `tdd-gate/run-*` branch; your checkout returns to
+  its original branch at the end, and a dirty tree is refused.
+- **Routing.** After a test turn, coverage sends gaps back to the test agent. Once coverage is clean
+  and code exists, the tests run; blame sends each failure to the test agent (wrong test, fixed
+  first) or the code agent, and stops the run when a person is needed.
+- **What the code agent learns from a failure**: the requirement, the code location, and the
+  assertion message (e.g. `expected 'a---b' to be 'a-b'`), never the test source. The message
+  does leak an input and expected output; the gaming gate is there for exactly that.
+- **Agents are commands.** The prompt goes on stdin, in the worktree. The default is Claude Code
+  (`claude -p --permission-mode acceptEdits --allowedTools Read,Write,Edit,Glob,Grep`, no shell);
+  `--agent`, `--test-agent` and `--code-agent` take any CLI that edits files in its working
+  directory. `--dry-run` prints both prompts.
+- **Stops** when the tests pass (`done`, exit 0), when a person is needed or turns run out
+  (`needs-human` / `out-of-turns`, exit 1), or on an error (exit 2). Possible findings and warnings
+  are reported as notes and never block.
+
+Put the interface (file, function, signature) in the plan as a requirement: the test agent never
+sees the code, so the plan is the only place both agents can agree on it.
+
+### Live runs (two Claude Code agents, jev-1.13, Vitest)
+
+A fresh repository containing only `package.json`, `.gitignore` and the slugify plan, plus an
+`interface` requirement naming `src/slugify.ts` and its signature. Three runs, each of which
+changed the orchestrator:
+
+| Run | What happened | Fix |
+|---|---|---|
+| 1 | The test agent put its tests next to the source (`src/slugify.test.ts`); coverage looked in `tests/`, found nothing there and crashed. | A missing path now has no tests. The prompt tells the test agent where its tests go. |
+| 2 | Tests in `tests/`, but written with `node:test`; Vitest reported the file as a single failure named after the file, which blame could not match, so the run stopped for a person. | The prompt now names the test command. A test file that fails to load goes back to the test agent with the runner's message, without blame. |
+| 3 | Tests (18, all six requirements) accepted by coverage first time; code accepted by gaming and drift first time; all tests passed. `done` in two turns. | |
+
+Run 3's code has no cache, logging or extra exports; the code agent never had the tests in its
+worktree. The happy path did not exercise a rejection or a blame round live: those paths are
+covered by unit tests with scripted agents, and the gates themselves by the example diffs above.
+One plan, one run to completion: evidence the loop works end to end, not a success rate.
 
 ## What each gate asks
 
@@ -206,6 +257,5 @@ a person).
 
 ## Not built yet
 
-- **orchestrator**: a reference loop that runs two agents through these gates.
 - **eval**: labelled cases from real agent runs, as semantic-lint's `eval` and `eval-history` do.
   The examples here are hand-made and much more blatant than what an agent will produce.

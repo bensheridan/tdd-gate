@@ -44,6 +44,14 @@ describe("cli", () => {
         expect(run(["gaming"]).err).toContain("gaming needs a change");
     });
 
+    it("dry-runs the orchestrator, showing both prompts, and checks the test command", () => {
+        const r = run(["run", "--requirements", `${ex}/requirements.yml`, "--test-command", "npx vitest run --reporter=junit --outputFile={junit}", "--dry-run"]);
+        expect(r.code).toBe(0);
+        expect(r.out).toContain("first test-agent prompt");
+        expect(r.out).toContain("[max-length]");
+        expect(run(["run", "--requirements", `${ex}/requirements.yml`, "--test-command", "npm test"]).err).toContain("{junit}");
+    });
+
     it("dry-runs drift, which needs requirements", () => {
         const d = run(["drift", "--requirements", `${ex}/requirements.yml`, "--diff", `${ex}/drift.diff`, "--dry-run"]);
         expect(d.code).toBe(0);

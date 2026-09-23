@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
 export interface TestCase {
@@ -116,7 +116,7 @@ export function extractTests(file: string, source: string, max: number = DEFAULT
     return [];
 }
 
-/** Test files under each path (a file is taken as-is), relative to `cwd`, sorted. */
+/** Test files under each path (a file is taken as-is), relative to `cwd`, sorted. A missing path has none. */
 export function findTestFiles(paths: string[], cwd: string = process.cwd()): string[] {
     const found = new Set<string>();
     const walk = (dir: string) => {
@@ -130,6 +130,7 @@ export function findTestFiles(paths: string[], cwd: string = process.cwd()): str
     };
     for (const p of paths) {
         const abs = join(cwd, p);
+        if (!existsSync(abs)) continue;
         if (statSync(abs).isDirectory()) walk(abs);
         else found.add(relative(cwd, abs).split(sep).join("/"));
     }
