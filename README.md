@@ -12,7 +12,7 @@ whether code is correct; the test runner does that. It answers the questions the
 
 Each judgment is a [TypeSafe](https://docs.typesafe.ai) System One (Jev) question about one test
 and one requirement, answered with a probability. Code builds the matrix, applies the thresholds
-and picks the route. Like [semantic-lint](../semantic-lint), nothing is generated: a finding is a
+and picks the route. Like [semantic-lint](https://github.com/bensheridan/semantic-lint), nothing is generated: a finding is a
 requirement, a test, a probability and a templated reason.
 
 ## Quick start
