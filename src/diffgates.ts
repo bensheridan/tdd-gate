@@ -108,7 +108,7 @@ const TASK: Record<Gate, string> = {
 };
 
 export interface DiffFinding {
-    gate: Gate;
+    gate: Gate | "drift";
     ruleId: string;
     title: string;
     severity: DiffRule["severity"];
@@ -124,13 +124,15 @@ export interface DiffFinding {
 }
 
 export interface DiffGateResult {
-    gate: Gate;
+    gate: Gate | "drift";
     findings: DiffFinding[];
     /** Hunks the model could not judge. Never counted as clean. */
     failures: { file: string; startLine: number; error: string }[];
     truncated: { file: string; startLine: number }[];
     stats: { hunks: number; hunksJudged: number; skipped: number };
     usage: Usage;
+    /** drift: which requirements each judged hunk serves. */
+    trace?: { file: string; startLine: number; endLine: number; requirements: string[] }[];
 }
 
 export function buildDiffQuestions(gate: Gate, rules: DiffRule[]): Questions {
@@ -144,8 +146,8 @@ export function buildDiffQuestions(gate: Gate, rules: DiffRule[]): Questions {
     return questions;
 }
 
-/** Hunks a gate looks at: code for gaming, tests for weakening. */
-export function gateHunks(gate: Gate, diff: string): Hunk[] {
+/** Hunks a gate looks at: tests for weakening, code for gaming and drift. */
+export function gateHunks(gate: Gate | "drift", diff: string): Hunk[] {
     return parseDiff(diff, undefined, gate === "weakening").filter((h) => (gate === "weakening") === isTestFile(h.file));
 }
 

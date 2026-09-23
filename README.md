@@ -13,6 +13,8 @@ whether code is correct; the test runner does that. It answers the questions the
   inputs, code that behaves differently under test, swallowed errors.
 - **weakening**: does the test agent's change make the tests easier to pass after code exists?
   Loosened, skipped or removed assertions, deleted test files.
+- **drift**: does the code agent's change add behaviour no requirement asks for? It also traces
+  each changed hunk to the requirements it serves.
 
 Each judgment is a [TypeSafe](https://docs.typesafe.ai) System One (Jev) question about one test
 and one requirement, answered with a probability. Code builds the matrix, applies the thresholds
@@ -33,6 +35,7 @@ node dist/cli.js blame    --requirements examples/slugify/requirements.yml --tes
                           --junit examples/slugify/results.xml --diff examples/slugify/code.diff
 node dist/cli.js gaming    --diff examples/slugify/gamed.diff --tests examples/slugify/tests
 node dist/cli.js weakening --diff examples/slugify/weakened.diff
+node dist/cli.js drift     --requirements examples/slugify/requirements.yml --diff examples/slugify/drift.diff
 ```
 
 Every command takes the change as `--diff <file|->` or `--base <ref> [--head <ref>]`. `gaming`
@@ -51,6 +54,7 @@ plan ──> requirements.yml (one testable behaviour each, with an id)
             │
             └──> code agent writes code (never sees the tests)
                      │    each code change ──> tdd-gate gaming    -> code agent (reject the change)
+                     │    each code change ──> tdd-gate drift     -> code agent (remove it) / human
                      │    each test change ──> tdd-gate weakening -> test agent (reject the change)
                      │
                  run tests (JUnit XML) ──> tdd-gate blame
@@ -103,6 +107,19 @@ blame. Re-run coverage afterwards, and its contradiction question checks the new
 against the plan. Removed assertions are warnings for the same reason: the gate may have asked for
 the deletion (an orphan or conflicting test).
 
+**drift**: one request per hunk of non-test code, with every requirement's text in the state:
+
+| Question | Used for |
+|---|---|
+| Is the hunk needed by requirement R? (one per requirement) | the hunk-to-requirement trace |
+| Does it add behaviour none of the requirements asks for? | `unrequested-behaviour`: to the code agent, or to a person if only possible |
+| Does it only reorganise code (formatting, moves, imports/exports, types)? | exempts the other two |
+
+The "extra" question is the one that matters. A hunk that implements three requirements *and*
+adds a cache counts as needed for each of the three, so per-requirement questions alone would
+never flag the cache. `untraced` (no requirement needs the hunk, and nothing extra was seen) is a
+warning for a person: it is dead code, or the plan is missing a requirement.
+
 Failures are read from JUnit XML, which Vitest (`--reporter=junit`), Jest (`jest-junit`) and pytest
 (`--junitxml`) all write. Tests are found in JS/TS (`it`/`test`, with `describe` names) and Python
 (`def test_*`, including methods) files.
@@ -132,14 +149,29 @@ The diff gates, on four example diffs (run twice each; same results both times):
 | `clean-tests.diff`: expected value corrected to match the plan | clean |
 | `near-miss-weakening.diff`: renamed test, `toBe` → `toEqual`, added assertion, removed TODO | clean |
 
+Drift (run twice; same results both times, probabilities within 0.1):
+
+| Diff | Result |
+|---|---|
+| `code.diff`: the implementation, which also adds an unrequested cache | flagged (0.96); the trace still shows lowercase, trim, strip |
+| `drift.diff`: `memo.ts` and `stats.ts` (call counter that logs) | both flagged (0.94, 0.97) |
+| `drift.diff`: `truncate.ts`, `chars.ts` (a helper for `strip`) | traced to `max-length` and `strip`, not flagged |
+| `drift.diff`: `index.ts` re-exporting `slugify` **and `clearCache`** | possible (0.59 to 0.68), to a person; exporting the cache's API is arguably drift |
+| `clean-fix.diff` | traced to `whitespace`, not flagged |
+| `near-miss-drift.diff`: re-export of `slugify` only, and a formatting-only rewrite | clean |
+
 With `-U10`, a whole small file is one hunk, so a finding points at the hunk, not the line.
 
-Two things the runs taught us, which also shaped the questions:
+Three things the runs taught us, which also shaped the questions:
 
 - **The first version of the plan was self-contradictory**, and the gate found it. "Drop every
   character that is not a letter, digit or hyphen, never replace it with a hyphen" also covers
   spaces, which the whitespace requirement replaces with hyphens. The whitespace test was flagged
   as conflicting with `strip`. Jev was reading literally and was right: the plan needed fixing.
+- **Examples in a question are read as rules.** The first drift wording listed "an extra export"
+  as extra behaviour, so a plain re-export of `slugify` was flagged. Narrowing it to "a new public
+  function, endpoint or command", and excluding exports that serve a requirement, fixed it. A
+  probe then showed the remaining signal on `index.ts` came from exporting `clearCache`.
 - **Aim and assertion strength have to be separate questions.** Asked as one, "is this a test of R?",
   a weak test came back as unrelated and a contradicting test as unrelated, since neither checks
   R. Blame first used a Choice over requirements and hit the same problem, because a Choice matches
@@ -167,12 +199,13 @@ near a threshold flip between runs.
 | `blame` | every failure routed to an agent | some need a person | some failures not judged, or bad input |
 | `gaming` | nothing flagged | a rule violated | some hunks not judged, or bad input |
 | `weakening` | nothing flagged (warnings allowed) | a loosened or skipped test | some hunks not judged, or bad input |
+| `drift` | nothing flagged (warnings allowed) | unrequested behaviour | some hunks not judged, or bad input |
 
 A failed request is never counted as clean: it is reported as not judged (and, for blame, routed to
 a person).
 
 ## Not built yet
 
-- **drift**: code hunks that no requirement needs.
+- **orchestrator**: a reference loop that runs two agents through these gates.
 - **eval**: labelled cases from real agent runs, as semantic-lint's `eval` and `eval-history` do.
   The examples here are hand-made and much more blatant than what an agent will produce.

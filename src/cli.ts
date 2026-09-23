@@ -5,6 +5,7 @@ import { blameExitCode, blameFailures, candidateHunks, matchTest } from "./blame
 import { createClient } from "./client.js";
 import { checkCoverage, coverageExitCode } from "./coverage.js";
 import { applicableDiffRules, checkDiff, diffExitCode, gateHunks, type Gate } from "./diffgates.js";
+import { checkDrift } from "./drift.js";
 import { parseDiff } from "./diff.js";
 import { loadJunit } from "./junit.js";
 import { formatBlame, formatCoverage, formatDiffGate, formatJson } from "./report.js";
@@ -29,6 +30,10 @@ Usage:
       Did the test agent's change (test files) make the tests easier to pass? Loosened, skipped
       or removed assertions, deleted test files.
 
+  tdd-gate drift --requirements <yml> <diff>
+      Does the code agent's change (non-test files) add behaviour no requirement asks for?
+      Also prints which requirements each changed hunk serves.
+
   <diff> is --diff <file|-> or --base <ref> [--head <ref>] (git diff base...head).
   --code-diff is accepted as another name for --diff. --requirements supplies thresholds.
 
@@ -45,18 +50,20 @@ Exit codes:
   blame     0 every failure routed to an agent, 1 some need a person, 2 not judged / bad input
   gaming    0 nothing flagged, 1 a rule violated, 2 not judged / bad input
   weakening 0 nothing flagged, 1 a loosened or skipped test, 2 not judged / bad input
-            (removed assertions and deleted test files are reported for a person, never fail)`;
+            (removed assertions and deleted test files are reported for a person, never fail)
+  drift     0 nothing flagged, 1 unrequested behaviour, 2 not judged / bad input
+            (hunks no requirement needs are reported for a person, never fail)`;
 
 interface Args {
-    command: "coverage" | "blame" | Gate;
+    command: "coverage" | "blame" | "drift" | Gate;
     flags: Map<string, string[]>;
     bools: Set<string>;
 }
 
 function parseArgs(argv: string[]): Args {
     const [command, ...rest] = argv;
-    if (command !== "coverage" && command !== "blame" && command !== "gaming" && command !== "weakening") {
-        throw new Error(`Unknown command "${command ?? ""}". Use coverage, blame, gaming or weakening (see --help).`);
+    if (!["coverage", "blame", "gaming", "weakening", "drift"].includes(command)) {
+        throw new Error(`Unknown command "${command ?? ""}". Use coverage, blame, gaming, weakening or drift (see --help).`);
     }
     const flags = new Map<string, string[]>();
     const bools = new Set<string>();
@@ -72,7 +79,7 @@ function parseArgs(argv: string[]): Args {
         if (value === undefined) throw new Error(`Option ${a} needs a value.`);
         flags.set(name, [...(flags.get(name) ?? []), value]);
     }
-    return { command, flags, bools };
+    return { command: command as Args["command"], flags, bools };
 }
 
 const str = (args: Args, name: string) => args.flags.get(name)?.at(-1);
@@ -138,6 +145,21 @@ async function main(): Promise<number> {
     }
 
     const plan = loadPlan(need(args, "requirements"));
+
+    if (args.command === "drift") {
+        const diff = readDiff(args);
+        if (dryRun) {
+            const hunks = gateHunks("drift", diff).filter((h) => h.addedLines.length > 0);
+            for (const h of hunks) console.log(`${h.file}:${h.startLine}-${h.endLine}`);
+            const n = plan.requirements.length;
+            console.log(`\nWould send ${hunks.length} request(s), one per hunk, each with ${n + 2} question(s) (needed by each of ${n} requirement(s), extra, housekeeping). Nothing was sent.`);
+            return 0;
+        }
+        const result = await checkDrift(createClient(), diff, plan, { concurrency });
+        console.log(format === "json" ? formatJson(result) : formatDiffGate(result));
+        return diffExitCode(result);
+    }
+
     if (testPaths.length === 0) throw new Error("--tests is required (a test file or a directory to search).");
     const tests = loadTests(testPaths);
     if (tests.length === 0) throw new Error(`No tests found under ${testPaths.join(", ")}.`);

@@ -44,6 +44,13 @@ describe("cli", () => {
         expect(run(["gaming"]).err).toContain("gaming needs a change");
     });
 
+    it("dry-runs drift, which needs requirements", () => {
+        const d = run(["drift", "--requirements", `${ex}/requirements.yml`, "--diff", `${ex}/drift.diff`, "--dry-run"]);
+        expect(d.code).toBe(0);
+        expect(d.out).toContain("Would send 5 request(s), one per hunk, each with 7 question(s)");
+        expect(run(["drift", "--diff", `${ex}/drift.diff`]).err).toContain("--requirements is required");
+    });
+
     it("fails clearly without a key, and on bad input, before any request", () => {
         const noKey = run(["coverage", "--requirements", `${ex}/requirements.yml`, "--tests", `${ex}/tests`]);
         expect(noKey.code).toBe(2);

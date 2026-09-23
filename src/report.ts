@@ -49,6 +49,10 @@ export function formatDiffGate(result: DiffGateResult): string {
     }
     for (const f of result.failures) out.push(`NOT JUDGED ${f.file}:${f.startLine}  ${f.error}`);
     for (const t of result.truncated) out.push(`TRUNCATED ${t.file}:${t.startLine}  hunk exceeded the size budget; its tail was not judged`);
+    if (result.trace) {
+        out.push("\ntrace:");
+        for (const t of result.trace) out.push(`  ${t.file}:${t.startLine}-${t.endLine}  ${t.requirements.join(", ") || "(none)"}`);
+    }
     const count = (band: string) => result.findings.filter((f) => f.band === band).length;
     out.push(
         `\n${result.gate}: ${count("violation")} flagged, ${count("possible")} possible, ${result.failures.length} hunk(s) not judged. ` +

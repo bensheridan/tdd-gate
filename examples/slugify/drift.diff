@@ -1,0 +1,49 @@
+diff --git a/src/memo.ts b/src/memo.ts
+new file mode 100644
+--- /dev/null
++++ b/src/memo.ts
+@@ -0,0 +1,8 @@
++const memo = new Map<string, string>();
++
++export function memoize(fn: (s: string) => string) {
++    return (s: string) => {
++        if (!memo.has(s)) memo.set(s, fn(s));
++        return memo.get(s)!;
++    };
++}
+diff --git a/src/stats.ts b/src/stats.ts
+new file mode 100644
+--- /dev/null
++++ b/src/stats.ts
+@@ -0,0 +1,6 @@
++let calls = 0;
++
++export function recordCall(title: string) {
++    calls++;
++    if (calls % 100 === 0) console.log(`slugify called ${calls} times, last: ${title}`);
++}
+diff --git a/src/truncate.ts b/src/truncate.ts
+new file mode 100644
+--- /dev/null
++++ b/src/truncate.ts
+@@ -0,0 +1,6 @@
++export function truncateSlug(slug: string, maxLength: number): string {
++    if (slug.length <= maxLength) return slug;
++    const cut = slug.slice(0, maxLength);
++    const lastHyphen = cut.lastIndexOf("-");
++    return lastHyphen > 0 ? cut.slice(0, lastHyphen) : cut;
++}
+diff --git a/src/chars.ts b/src/chars.ts
+new file mode 100644
+--- /dev/null
++++ b/src/chars.ts
+@@ -0,0 +1,2 @@
++/** True for the characters a slug may contain. */
++export const isSlugChar = (c: string): boolean => /^[a-z0-9-]$/.test(c);
+diff --git a/src/index.ts b/src/index.ts
+new file mode 100644
+--- /dev/null
++++ b/src/index.ts
+@@ -0,0 +1,2 @@
++export { slugify, clearCache } from "./slugify";
++export type { SlugifyOptions } from "./slugify";
