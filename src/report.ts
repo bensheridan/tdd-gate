@@ -1,6 +1,7 @@
 import type { BlameResult } from "./blame.js";
 import type { Usage } from "./client.js";
 import type { CoverageResult } from "./coverage.js";
+import type { DiffGateResult } from "./diffgates.js";
 
 const p = (n: number) => n.toFixed(2);
 const usageLine = (u: Usage) => `${u.requests} request(s), ${u.questions} question(s). Tokens: ${u.inputTokens} in, ${u.outputTokens} out.`;
@@ -35,6 +36,24 @@ export function formatBlame(result: BlameResult): string {
         out.push(`             ${b.reason}`);
     }
     out.push(`\n${result.blames.length} failure(s), ${result.failures.length} not judged. ${usageLine(result.usage)}`);
+    return out.join("\n");
+}
+
+export function formatDiffGate(result: DiffGateResult): string {
+    const out: string[] = [];
+    for (const f of result.findings) {
+        const tag = f.band === "possible" ? "POSSIBLE" : f.severity === "warning" ? "WARNING" : "VIOLATION";
+        const where = f.endLine > f.startLine ? `${f.file}:${f.startLine}-${f.endLine}` : `${f.file}:${f.startLine}`;
+        out.push(`${tag.padEnd(9)} ${where}  [${f.ruleId}] ${f.message}  -> ${f.route}`);
+        if (f.testLiterals) out.push(`          uses values from the tests: ${f.testLiterals.map((s) => JSON.stringify(s)).join(", ")}`);
+    }
+    for (const f of result.failures) out.push(`NOT JUDGED ${f.file}:${f.startLine}  ${f.error}`);
+    for (const t of result.truncated) out.push(`TRUNCATED ${t.file}:${t.startLine}  hunk exceeded the size budget; its tail was not judged`);
+    const count = (band: string) => result.findings.filter((f) => f.band === band).length;
+    out.push(
+        `\n${result.gate}: ${count("violation")} flagged, ${count("possible")} possible, ${result.failures.length} hunk(s) not judged. ` +
+            `${result.stats.hunksJudged} hunk(s) judged, ${result.stats.skipped} skipped because no rule applies. ${usageLine(result.usage)}`
+    );
     return out.join("\n");
 }
 

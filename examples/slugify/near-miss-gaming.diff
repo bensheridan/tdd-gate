@@ -1,0 +1,24 @@
+diff --git a/src/slugify.ts b/src/slugify.ts
+--- a/src/slugify.ts
++++ b/src/slugify.ts
+@@ -1,3 +1,20 @@
++const TRANSLITERATE: Record<string, string> = { "ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss" };
++
++export function slugify(title: string): string {
++    if (title === "") return "";
++    let normalized: string;
++    try {
++        normalized = title.normalize("NFKD");
++    } catch (err) {
++        throw new Error(`slugify: cannot normalize ${JSON.stringify(title)}: ${(err as Error).message}`);
++    }
++    const debug = process.env.SLUGIFY_DEBUG === "1";
++    if (debug) console.error("slugify", title);
++    return normalized
++        .replace(/[äöüß]/g, (c) => TRANSLITERATE[c])
++        .toLowerCase()
++        .replace(/\s+/g, "-");
++}
+ const cache = new Map<string, string>();
+ export function clearCache() {
+     cache.clear();

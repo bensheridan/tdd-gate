@@ -28,10 +28,20 @@ describe("cli", () => {
     });
 
     it("dry-runs blame on the example, matching both failures to tests and code", () => {
-        const r = run(["blame", "--requirements", `${ex}/requirements.yml`, "--tests", `${ex}/tests`, "--junit", `${ex}/results.xml`, "--code-diff", `${ex}/code.diff`, "--dry-run"]);
+        const r = run(["blame", "--requirements", `${ex}/requirements.yml`, "--tests", `${ex}/tests`, "--junit", `${ex}/results.xml`, "--diff", `${ex}/code.diff`, "--dry-run"]);
         expect(r.code).toBe(0);
         expect(r.out).not.toContain("not found");
         expect(r.out.match(/src\/slugify\.ts:1/g)).toHaveLength(2);
+    });
+
+    it("dry-runs gaming and weakening without a key or a requirements file", () => {
+        const g = run(["gaming", "--diff", `${ex}/gamed.diff`, "--tests", `${ex}/tests`, "--dry-run"]);
+        expect(g.code).toBe(0);
+        expect(g.out).toContain("special-case, test-aware, swallowed-error");
+        const w = run(["weakening", "--diff", `${ex}/weakened.diff`, "--dry-run"]);
+        expect(w.code).toBe(0);
+        expect(w.out).toContain("loosened-assertion, skipped-test, removed-assertion");
+        expect(run(["gaming"]).err).toContain("gaming needs a change");
     });
 
     it("fails clearly without a key, and on bad input, before any request", () => {

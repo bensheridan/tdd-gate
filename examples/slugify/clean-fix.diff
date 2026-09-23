@@ -1,0 +1,22 @@
+diff --git a/src/slugify.ts b/src/slugify.ts
+index 9d42925..fdaed99 100644
+--- a/src/slugify.ts
++++ b/src/slugify.ts
+@@ -2,16 +2,16 @@ const cache = new Map<string, string>();
+ 
+ export function clearCache() {
+     cache.clear();
+ }
+ 
+ export function slugify(title: string): string {
+     const hit = cache.get(title);
+     if (hit !== undefined) return hit;
+     const slug = title
+         .toLowerCase()
+-        .replace(/ /g, "-")
++        .replace(/\s+/g, "-")
+         .replace(/[^a-z0-9-]/g, "")
+         .replace(/^-+|-+$/g, "");
+     cache.set(title, slug);
+     return slug;
+ }

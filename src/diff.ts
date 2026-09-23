@@ -23,19 +23,21 @@ export const DEFAULT_MAX_HUNK_CHARS = 12_000;
 const HUNK_HEADER = /^@@ -\d+(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
 
 /**
- * Parses a unified diff into hunks that contain at least one added line.
- * Deleted files and binary files are skipped: there is no new code to judge.
+ * Parses a unified diff into hunks that contain at least one added line, or, with `keepRemovals`,
+ * at least one removed line (a deleted assertion is what the weakening gate looks for).
+ * Deleted files and binary files are skipped: see `deletedFiles` for the former.
  */
-export function parseDiff(diff: string, maxHunkChars: number = DEFAULT_MAX_HUNK_CHARS): Hunk[] {
+export function parseDiff(diff: string, maxHunkChars: number = DEFAULT_MAX_HUNK_CHARS, keepRemovals = false): Hunk[] {
     const hunks: Hunk[] = [];
     const lines = diff.split("\n");
 
     let file: string | null = null;
     let skipFile = false;
-    let current: { rendered: string[]; added: AddedLine[]; removed: string[]; newLine: number } | null = null;
+    // `anchor` is the new-file line where the first change sits, for hunks that only remove lines.
+    let current: { rendered: string[]; added: AddedLine[]; removed: string[]; newLine: number; anchor: number | null } | null = null;
 
     const flush = () => {
-        if (file && current && current.added.length > 0) {
+        if (file && current && (current.added.length > 0 || (keepRemovals && current.removed.length > 0))) {
             let text = current.rendered.join("\n");
             let truncated = false;
             if (text.length > maxHunkChars) {
@@ -44,8 +46,8 @@ export function parseDiff(diff: string, maxHunkChars: number = DEFAULT_MAX_HUNK_
             }
             hunks.push({
                 file,
-                startLine: current.added[0].line,
-                endLine: current.added[current.added.length - 1].line,
+                startLine: current.added[0]?.line ?? current.anchor ?? current.newLine,
+                endLine: current.added[current.added.length - 1]?.line ?? current.anchor ?? current.newLine,
                 addedLines: current.added,
                 removedLines: current.removed,
                 text,
@@ -78,6 +80,7 @@ export function parseDiff(diff: string, maxHunkChars: number = DEFAULT_MAX_HUNK_
             if (marker === "+") {
                 newLeft--;
                 if (current) {
+                    current.anchor ??= current.newLine;
                     current.added.push({ line: current.newLine, text: body });
                     current.rendered.push(`+${String(current.newLine).padStart(5)}| ${body}`);
                     current.newLine++;
@@ -85,6 +88,7 @@ export function parseDiff(diff: string, maxHunkChars: number = DEFAULT_MAX_HUNK_
             } else if (marker === "-") {
                 oldLeft--;
                 if (current) {
+                    current.anchor ??= current.newLine;
                     current.removed.push(body);
                     current.rendered.push(`-     | ${body}`);
                 }
@@ -128,12 +132,19 @@ export function parseDiff(diff: string, maxHunkChars: number = DEFAULT_MAX_HUNK_
             oldLeft = header[1] === undefined ? 1 : Number(header[1]);
             newLeft = header[3] === undefined ? 1 : Number(header[3]);
             if (!skipFile && file) {
-                current = { rendered: [], added: [], removed: [], newLine: Number(header[2]) };
+                current = { rendered: [], added: [], removed: [], newLine: Number(header[2]), anchor: null };
             }
         }
     }
     flush();
     return hunks;
+}
+
+/** Files the diff deletes outright. */
+export function deletedFiles(diff: string): string[] {
+    const out: string[] = [];
+    for (const m of diff.matchAll(/^diff --git a\/(.+) b\/\1\n(?:(?:old|new) mode \d+\n)?deleted file mode /gm)) out.push(m[1]);
+    return out;
 }
 
 /** The text rule triggers are matched against: added lines plus removed lines. */

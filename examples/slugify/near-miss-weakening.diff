@@ -1,0 +1,22 @@
+diff --git a/tests/slugify.test.ts b/tests/slugify.test.ts
+--- a/tests/slugify.test.ts
++++ b/tests/slugify.test.ts
+@@ -3,12 +3,16 @@ import { slugify, clearCache } from "../src/slugify";
+ describe("slugify", () => {
+-    it("lowercases letters", () => {
+-        expect(slugify("Hello World")).toBe("hello-world");
++    it("lowercases every letter", () => {
++        expect(slugify("Hello World")).toEqual("hello-world");
+     });
+ 
+     it("collapses runs of spaces into one hyphen", () => {
+-        expect(slugify("a   b")).toBe("a-b");
++        expect(slugify("a   b")).toBe("a-b");
++        expect(slugify("a \t\n b")).toBe("a-b");
+     });
+ 
+-    // TODO: cover tabs
++    it.each(["a b", "a  b"])("hyphenates %s", (input) => {
++        expect(slugify(input)).toBe("a-b");
++    });
+ });

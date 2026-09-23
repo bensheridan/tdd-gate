@@ -16,6 +16,8 @@ export interface Thresholds {
     strong: number;
     /** Choice confidence below which a failure is routed to a person instead of an agent. */
     route: number;
+    /** p(gaming or weakening) at or above which a hunk is flagged; between `possible` and this it is reported as possible. */
+    flag: number;
 }
 
 export interface Plan {
@@ -24,7 +26,7 @@ export interface Plan {
 }
 
 // Starting points, not validated values. Measure on your own history before trusting them.
-export const DEFAULT_THRESHOLDS: Thresholds = { covered: 0.7, possible: 0.35, strong: 0.6, route: 0.6 };
+export const DEFAULT_THRESHOLDS: Thresholds = { covered: 0.7, possible: 0.35, strong: 0.6, route: 0.6, flag: 0.7 };
 
 export class PlanError extends Error {}
 
@@ -60,7 +62,13 @@ export function parsePlan(source: string): Plan {
     const possible = Math.min(unit(t.possible, DEFAULT_THRESHOLDS.possible), covered);
     return {
         requirements,
-        thresholds: { covered, possible, strong: unit(t.strong, DEFAULT_THRESHOLDS.strong), route: unit(t.route, DEFAULT_THRESHOLDS.route) },
+        thresholds: {
+            covered,
+            possible,
+            strong: unit(t.strong, DEFAULT_THRESHOLDS.strong),
+            route: unit(t.route, DEFAULT_THRESHOLDS.route),
+            flag: Math.max(unit(t.flag, DEFAULT_THRESHOLDS.flag), possible),
+        },
     };
 }
 
