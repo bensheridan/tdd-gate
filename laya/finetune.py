@@ -36,6 +36,7 @@ import laya
 from laya.common import QTYPES, collate_items
 
 HEAD_MAX_LEN = 256
+GATE_WEIGHT_CAP = 20.0
 
 
 def case_plans(cases_dir):
@@ -84,7 +85,7 @@ def load_requests(log_path, plans):
                 skipped += 1
                 continue
             key = json.dumps([case_id, r["state"], r["questions"]], sort_keys=True)
-            m = merged.setdefault(key, {"plan": plan, "caseId": case_id, "state": r["state"],
+            m = merged.setdefault(key, {"plan": plan, "caseId": case_id, "gate": r.get("gate", ""), "state": r["state"],
                                         "questions": r["questions"], "targets": defaultdict(list)})
             for qid, q in r["questions"].items():
                 t = target_of(q, r["answers"].get(qid, {}))
@@ -113,7 +114,7 @@ def encode(agent, requests, max_len):
             target = np.mean(np.array(r["targets"][qid]), axis=0).tolist()
             if len(target) != len(it["markers"]):
                 continue
-            items.append({**it, "target": target, "caseId": r["caseId"], "plan": r["plan"], "qid": qid})
+            items.append({**it, "target": target, "caseId": r["caseId"], "plan": r["plan"], "gate": r["gate"], "qid": qid})
     return items, dropped
 
 
@@ -227,6 +228,17 @@ def report(name, items, logits, temps):
             agree = np.mean([p.argmax() == y.argmax() for p, y in rows])
             parts.append(f"choice n={len(rows)} top-agree={agree:.1%}")
     print(f"  {name:10} " + "; ".join(parts), flush=True)
+    # Coverage questions are most of the rows; the rare gates are the ones that matter.
+    gates = defaultdict(list)
+    for it, z in zip(items, logits):
+        if it["qtype"] == QTYPES["noul"]:
+            t = temps.get(it["qtype"], 1.0)
+            gates[it.get("gate") or "?"].append((1 / (1 + np.exp(-(z[1] - z[0]) / t)), it["target"][1] >= 0.5))
+    per_gate = []
+    for g, rows in sorted(gates.items()):
+        yes = sum(y for _, y in rows)
+        per_gate.append(f"{g} {auc([p for p, _ in rows], [y for _, y in rows]):.2f} ({yes}/{len(rows)} yes)")
+    print(f"  {'':10} AUC-vs-jev by gate: " + ", ".join(per_gate), flush=True)
 
 
 def main():
@@ -244,6 +256,8 @@ def main():
     ap.add_argument("--max-tokens", type=int, default=8192, help="padded tokens per batch")
     ap.add_argument("--val-fraction", type=float, default=0.1, help="training cases kept back for temperatures")
     ap.add_argument("--limit", type=int, default=0, help="train on at most this many rows (smoke tests)")
+    ap.add_argument("--yes-weight", type=float, default=1.0, help="loss weight on yes/no questions Jev answered yes (e.g. 4)")
+    ap.add_argument("--balance-gates", action="store_true", help="weight each gate's rows to about equal total (capped at %g)" % GATE_WEIGHT_CAP)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default=None, help="torch device, e.g. cuda or mps (default: best available)")
     ap.add_argument("--amp", action="store_true", help="bf16 autocast; faster on recent NVIDIA GPUs")
@@ -296,13 +310,30 @@ def main():
         model.encoder.gradient_checkpointing_enable()
     model.head_checkpointing = True
 
+    # --balance-gates: coverage is ~95% of the rows, gaming and weakening under 1%. Give each gate
+    # about equal total weight, capped so a gate with a few dozen rows is not simply memorised.
+    gate_weight = {}
+    if args.balance_gates:
+        counts = defaultdict(int)
+        for it in train:
+            counts[it["gate"]] += 1
+        for g, n in counts.items():
+            gate_weight[g] = min(GATE_WEIGHT_CAP, len(train) / (len(counts) * n))
+        print(f"gate weights: { {g: round(w, 2) for g, w in sorted(gate_weight.items())} }", flush=True)
+
     step, started = 0, time.time()
     for epoch in range(args.epochs):
         model.train()
         total, n = 0.0, 0
         for group in batches(train, args.rows, shuffle=True, max_tokens=args.max_tokens):
             logits, target, mask = forward(agent, group)
-            loss = soft_ce(logits, target, mask).mean()
+            # --yes-weight: rows where Jev said yes are rare (about 1 in 5) and are the answers the
+            # gates act on; weight them up so the model cannot do well by saying no.
+            weight = torch.tensor([gate_weight.get(it["gate"], 1.0) for it in group], device=logits.device)
+            if args.yes_weight != 1.0:
+                is_yes = torch.tensor([it["qtype"] == QTYPES["noul"] and it["target"][1] >= 0.5 for it in group], device=logits.device)
+                weight = torch.where(is_yes, weight * args.yes_weight, weight)
+            loss = (soft_ce(logits, target, mask) * weight).sum() / weight.sum()
             opt.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -334,7 +365,7 @@ def main():
         if part:
             report(name, part, predict(agent, part, args.rows, args.max_tokens), temps)
 
-    save(agent, args, temps, {"device": str(agent.device), "amp": AMP, "train_rows": len(train), "val_rows": len(val), "holdout": args.holdout,
+    save(agent, args, temps, {"device": str(agent.device), "amp": AMP, "gate_weights": gate_weight, "train_rows": len(train), "val_rows": len(val), "holdout": args.holdout,
                               "plans": plans, "steps": step, "seconds": round(time.time() - started)})
 
 
@@ -357,7 +388,7 @@ def save(agent, args, temps, stats):
     cfg["temperature_by_options"] = {}
     cfg["training"] = {**cfg.get("training", {}), "fine_tuned_from_checkpoint": True, "tdd_gate": {
         "base": args.base, "log": os.path.basename(args.log), "epochs": args.epochs, "lr": args.lr,
-        "head_lr": args.head_lr, "max_len": args.max_len, "seed": args.seed, **stats}}
+        "head_lr": args.head_lr, "yes_weight": args.yes_weight, "balance_gates": args.balance_gates, "max_len": args.max_len, "seed": args.seed, **stats}}
     with open(os.path.join(args.out, "rl_agent_config.json"), "w") as f:
         json.dump(cfg, f, indent=2)
     print(f"checkpoint written to {args.out}", flush=True)

@@ -391,11 +391,28 @@ Each plan held out of training in turn, 3 epochs, scored on rows it never traine
 
 Fine-tuning moves every fold from near-chance or weak (AUC 0.50 to 0.64, consistent with the
 zero-shot result above) to 0.80 to 0.86, and choice questions transfer well (81% to 100%
-top-agree) even though each held-out plan's own choice options never appear in training. Noul
-`agree@0.5` improves a lot but lags the AUC gain: the model ranks Jev's yeses above its nos far
-better than the fixed 0.5 threshold reflects, which is a calibration problem, not a ranking one.
-Each fold trained in 6 to 7 minutes end to end (encoder plus head, no other change from the Mac
-run) at a peak of 6.1 GiB of the card's 12 GB, against the untuned ~1 hour per plan on MPS.
+top-agree) even though each held-out plan's own choice options never appear in training. Each
+fold trained in 6 to 7 minutes end to end at a peak of 6.1 GiB of the card's 12 GB, against about
+an hour per plan on MPS. A Mac run of the `cart` fold agreed (AUC 0.81).
+
+**The gates do not work yet, though.** These AUCs are per question, and 95% of the questions are
+coverage questions (12,402 of 13,114 nouls; gaming has 33, weakening 59, drift 176, blame 444).
+Run through the gates on the 44 `cart` cases, the `cart`-held-out checkpoint caught nothing:
+
+| `cart` cases | Jev | fine-tuned Laya (trained on the other two plans) |
+|---|---|---|
+| coverage conflicts found | 3/5 | 0/5 |
+| blame route | 9/10 | 4/10: contradicting tests sent to the code agent or a person |
+| gaming, weakening, drift problems caught | 5 of 6 | 0 of 6, no false alarms |
+
+Zero-shot Laya said yes to nearly everything; fine-tuned, it says no to nearly everything, since
+Jev says no to about four questions in five. A few missed findings sat just under their
+thresholds (`skipped-test` 0.68, `swallowed-error` 0.57), but the conflict and blame misses are
+not near a threshold, so recalibrating alone will not fix them. The rare gates have a handful of
+positive examples per plan, which is too few to learn from as the loss is weighted now.
+`finetune.py` now reports AUC per gate so this is visible, and has two options to try:
+`--yes-weight` (more loss on questions Jev answered yes) and `--balance-gates` (each gate gets
+about equal total weight, capped at 20x per row).
 
 ## Writing requirements
 
@@ -444,8 +461,9 @@ In priority order, from the first eval results. Re-score with `eval --cases eval
 7. **Review tooling**: labeling means editing JSON; a review page would be faster.
 8. **More plans**: three small plans is a start, not a benchmark. Include some with deliberately
    conflicting requirements, since that is where runs got stuck.
-9. **Calibrate the fine-tuned noul threshold.** Leave-one-plan-out fine-tuning (see
-   [Laya as a local backend](#laya-as-a-local-backend)) gets AUC to 0.80-0.86 on a held-out plan,
-   but `agree@0.5` lags well behind that: the model ranks correctly more often than a fixed 0.5 cut
-   gives it credit for. Fit the noul threshold (not just the temperature) on the validation split
-   the same way `--val-fraction` already fits temperatures, and re-score the held-out plans.
+9. **Make fine-tuned Laya catch the rare findings, or drop it.** Leave-one-plan-out fine-tuning
+   (see [Laya as a local backend](#laya-as-a-local-backend)) reaches AUC 0.80-0.86 per question,
+   but on held-out `cart` the gates caught nothing. Re-run the three folds with `--yes-weight 4`
+   and with `--balance-gates`, and judge them by the per-gate AUC and by
+   `eval --cases eval/cases/<plan> --backend laya` with `LAYA_CHECKPOINT` set, not by overall
+   agreement. If the rare gates stay near chance, the fix is more plans (step 8), not tuning.
