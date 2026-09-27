@@ -376,6 +376,27 @@ py -3.11 -m venv .venv
 
 On a Mac it runs on MPS without `--amp`, about an hour per plan held out.
 
+### Result: fine-tuned, leave-one-plan-out (laya 0.3.20, `laya-multilingual`, RTX 4070, `--amp`)
+
+Each plan held out of training in turn, 3 epochs, scored on rows it never trained on:
+
+| Held-out plan | | choice top-agree | noul mean\|p-jev\| | noul agree@0.5 (always-no) | AUC-vs-jev |
+|---|---|---|---|---|---|
+| `cart` (n=16 / 4,163) | zero-shot | 50.0% | 0.445 | 38.8% (76.6%) | 0.640 |
+| | fine-tuned | 81.2% | 0.175 | 83.0% | 0.836 |
+| `duration` (n=27 / 5,188) | zero-shot | 29.6% | 0.459 | 31.5% (78.1%) | 0.504 |
+| | fine-tuned | 92.6% | 0.185 | 79.9% | 0.805 |
+| `slugify` (n=20 / 3,755) | zero-shot | 30.0% | 0.386 | 52.9% (86.2%) | 0.565 |
+| | fine-tuned | 100.0% | 0.212 | 73.7% | 0.862 |
+
+Fine-tuning moves every fold from near-chance or weak (AUC 0.50 to 0.64, consistent with the
+zero-shot result above) to 0.80 to 0.86, and choice questions transfer well (81% to 100%
+top-agree) even though each held-out plan's own choice options never appear in training. Noul
+`agree@0.5` improves a lot but lags the AUC gain: the model ranks Jev's yeses above its nos far
+better than the fixed 0.5 threshold reflects, which is a calibration problem, not a ranking one.
+Each fold trained in 6 to 7 minutes end to end (encoder plus head, no other change from the Mac
+run) at a peak of 6.1 GiB of the card's 12 GB, against the untuned ~1 hour per plan on MPS.
+
 ## Writing requirements
 
 - One behaviour per requirement, stated as the exact condition. When something is easy to confuse,
@@ -423,7 +444,8 @@ In priority order, from the first eval results. Re-score with `eval --cases eval
 7. **Review tooling**: labeling means editing JSON; a review page would be faster.
 8. **More plans**: three small plans is a start, not a benchmark. Include some with deliberately
    conflicting requirements, since that is where runs got stuck.
-9. **Fine-tune Laya on the eval set, or drop it.** Zero-shot, it is not usable as a gate (see
-   [Laya as a local backend](#laya-as-a-local-backend)). It keeps some signal on the lexical rules,
-   so fine-tuning on harvested cases is the one thing left to try; score it on plans it was not
-   trained on.
+9. **Calibrate the fine-tuned noul threshold.** Leave-one-plan-out fine-tuning (see
+   [Laya as a local backend](#laya-as-a-local-backend)) gets AUC to 0.80-0.86 on a held-out plan,
+   but `agree@0.5` lags well behind that: the model ranks correctly more often than a fixed 0.5 cut
+   gives it credit for. Fit the noul threshold (not just the temperature) on the validation split
+   the same way `--val-fraction` already fits temperatures, and re-score the held-out plans.
