@@ -6,7 +6,8 @@
 - the token budget is raised to LAYA_MAX_LEN (default 8192, mmBERT's context) from the
   checkpoint's trained 1024, because Laya otherwise cuts the state silently;
 - a request that would still be cut is refused (HTTP 422), so tdd-gate reports it as not judged
-  instead of judging a test or hunk it only saw part of.
+  instead of judging a test or hunk it only saw part of;
+- LAYA_CHECKPOINT serves a fine-tuned checkpoint (laya/finetune.py) instead of the published one.
 
     pip install "laya[serve]"
     python laya/server.py            # then: tdd-gate <command> --backend laya
@@ -19,6 +20,8 @@ from laya.router import Router
 from laya.serve import create_app
 
 MODEL = os.environ.get("LAYA_MODEL", "multilingual")
+# A directory written by laya/finetune.py, served in place of the published checkpoint.
+CHECKPOINT = os.environ.get("LAYA_CHECKPOINT")
 MAX_LEN = int(os.environ.get("LAYA_MAX_LEN", "8192"))
 HEAD_MAX_LEN = 256
 OPTION_CAP = 48  # tokens per option, as in laya.common.build_sequence
@@ -59,7 +62,8 @@ class TddGateRouter(Router):
 def main():
     import uvicorn
 
-    router = TddGateRouter(device=os.environ.get("LAYA_DEVICE") or None)
+    models = {MODEL: os.path.abspath(CHECKPOINT)} if CHECKPOINT else None
+    router = TddGateRouter(models=models, device=os.environ.get("LAYA_DEVICE") or None)
     router.preload([MODEL])
     uvicorn.run(
         create_app(router),
