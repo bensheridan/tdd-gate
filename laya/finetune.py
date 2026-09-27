@@ -115,10 +115,19 @@ def encode(agent, requests, max_len):
     return items, dropped
 
 
-def batches(items, rows, shuffle):
-    """Length-bucketed batches of up to `rows` items, to keep padding (and MPS memory) down."""
+def batches(items, rows, shuffle, max_tokens=8192):
+    """Length-bucketed batches of up to `rows` items and `max_tokens` padded tokens, so a batch of
+    long inputs is smaller instead of running out of (MPS) memory."""
     order = sorted(range(len(items)), key=lambda i: len(items[i]["ids"]))
-    groups = [order[i:i + rows] for i in range(0, len(order), rows)]
+    groups, group = [], []
+    for i in order:
+        width = len(items[i]["ids"])  # the longest so far, since the order is ascending
+        if group and (len(group) >= rows or (len(group) + 1) * width > max_tokens):
+            groups.append(group)
+            group = []
+        group.append(i)
+    if group:
+        groups.append(group)
     if shuffle:
         random.shuffle(groups)
     for g in groups:
@@ -139,12 +148,12 @@ def soft_ce(logits, target, mask, temperature=1.0):
 
 
 @torch.no_grad()
-def predict(agent, items, rows):
+def predict(agent, items, rows, max_tokens=8192):
     """Raw logits per item (in item order), for evaluation and temperature fitting."""
     agent.model.eval()
     out = [None] * len(items)
     index = {id(it): i for i, it in enumerate(items)}
-    for group in batches(items, rows, shuffle=False):
+    for group in batches(items, rows, shuffle=False, max_tokens=max_tokens):
         logits, _, mask = forward(agent, group)
         for it, row, m in zip(group, logits.float().cpu(), mask.cpu()):
             out[index[id(it)]] = row[m].numpy()
@@ -215,7 +224,8 @@ def main():
     ap.add_argument("--lr", type=float, default=2e-5, help="encoder learning rate")
     ap.add_argument("--head-lr", type=float, default=1e-4)
     ap.add_argument("--rows", type=int, default=16, help="questions per batch")
-    ap.add_argument("--max-len", type=int, default=2048, help="token budget while training")
+    ap.add_argument("--max-len", type=int, default=2048, help="longest input kept for training, in tokens")
+    ap.add_argument("--max-tokens", type=int, default=8192, help="padded tokens per batch")
     ap.add_argument("--val-fraction", type=float, default=0.1, help="training cases kept back for temperatures")
     ap.add_argument("--limit", type=int, default=0, help="train on at most this many rows (smoke tests)")
     ap.add_argument("--seed", type=int, default=0)
@@ -259,17 +269,19 @@ def main():
     enc_ids = {id(p) for p in enc_params}
     head_params = [p for p in model.parameters() if id(p) not in enc_ids]
     opt = torch.optim.AdamW([{"params": enc_params, "lr": args.lr}, {"params": head_params, "lr": args.head_lr}], weight_decay=0.01)
-    steps = args.epochs * math.ceil(len(train) / args.rows)
+    steps = args.epochs * sum(1 for _ in batches(train, args.rows, shuffle=False, max_tokens=args.max_tokens))
     warmup = max(1, steps // 20)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / warmup) * max(0.0, (steps - s) / max(1, steps - warmup)))
+    # Recompute activations in the backward pass, in the encoder and in Laya's own head layers.
     if hasattr(model.encoder, "gradient_checkpointing_enable"):
         model.encoder.gradient_checkpointing_enable()
+    model.head_checkpointing = True
 
     step, started = 0, time.time()
     for epoch in range(args.epochs):
         model.train()
         total, n = 0.0, 0
-        for group in batches(train, args.rows, shuffle=True):
+        for group in batches(train, args.rows, shuffle=True, max_tokens=args.max_tokens):
             logits, target, mask = forward(agent, group)
             loss = soft_ce(logits, target, mask).mean()
             opt.zero_grad(set_to_none=True)
