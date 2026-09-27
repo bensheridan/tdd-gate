@@ -306,6 +306,114 @@ kept, unlabeled, as material for review. The plans were rewritten to scope each 
 These numbers are small counts on three small plans, and harvesting and scoring were done while
 building the tool. Treat them as where to look next, not as accuracy figures.
 
+## Laya as a local backend
+
+Every command takes `--backend laya`, which sends the same questions to a local
+[Laya](https://huggingface.co/convaiinnovations/laya) server instead of TypeSafe. Laya is an open
+(Apache 2.0) System 1 model whose server speaks Jev's `/v1/systemone` protocol, so nothing in the
+gates changes.
+
+```bash
+pip install "laya[serve]"            # torch; the checkpoint (~650 MB) downloads on first start
+python laya/server.py                # 127.0.0.1:8000; LAYA_URL tells tdd-gate where it is
+node dist/cli.js eval --cases eval/cases --backend laya
+```
+
+`laya/server.py` pins the `laya-multilingual` checkpoint (mmBERT) and raises its token budget from
+the trained 1,024 to 8,192. Laya otherwise cuts the state silently. Anything that would still be
+cut is refused, and tdd-gate reports it as not judged. On the eval set's 803 requests the state is
+112 tokens at the median and 4,545 at most (12 requests exceed 1,024), and every question's
+instructions fit the 256-token head, so no gate needed a smaller state.
+
+### Result: not usable zero-shot (laya 0.3.20, `laya-multilingual`, same 135 cases)
+
+The whole eval ran in 4.5 minutes on an M4 Pro (MPS), with nothing sent off the machine. The
+answers mostly say yes:
+
+| Gate / rule | Jev (recorded) | Laya |
+|---|---|---|
+| blame route | 35/37 | 15/37: `test_wrong` for all 22 code bugs (p 0.87 to 0.96) |
+| coverage conflict | 12/15 found | 14/15 found, but Laya calls 58% of all 4,134 test/requirement pairs contradictions (Jev: 3%) |
+| gaming `special-case` | 3 TP, 1 FP | 3 TP, 22 FP: every hunk flagged |
+| weakening `loosened-assertion` / `removed-assertion` | 3/0 and 1/4 (TP/FP) | 3/23 and 3/24: every hunk flagged |
+| drift `unrequested-behaviour` | 3 TP, 4 FP | 0 of 3 features caught |
+| gaming `swallowed-error` | 3/3 | 2/3, no false alarms |
+| weakening `skipped-test` | 3/3 | 3/3, 2 false alarms |
+
+Is a threshold the problem? Ranking says mostly not. AUC per rule (positives vs negatives, with
+3 positives each, so rough): `swallowed-error` 1.00 and `skipped-test` 0.97, where the evidence is
+lexical (an empty `catch`, `.skip`), and `loosened-assertion` 0.79. `special-case` 0.38,
+`removed-assertion` 0.43 and drift 0.50 are at or below chance. Jev is at 1.00 on every rule
+except `removed-assertion` (0.62). Sending the instructions as plain text instead of a JSON object
+changed nothing, which rules out the obvious formatting explanation.
+
+This matches the model card, which says the base checkpoints perform "near-chance on specialized
+benchmarks" without fine-tuning. Code review questions are far from what Laya was trained on.
+The adapter stays: it is the way to score a fine-tuned checkpoint, or any other server that speaks
+`/v1/systemone`, against Jev on the same cases.
+
+To collect training data, `--log-requests <file>` appends every request with its answers to a
+JSONL file, on any command and either backend. Each line carries a `runId`, so runs that append
+to the same file can be told apart. Under `eval` it also carries the case's `plan`, `caseId` and
+`gate`, so the data can be split by plan:
+
+```bash
+node dist/cli.js eval --cases eval/cases --log-requests jev-requests.jsonl   # Jev, ~800 requests
+```
+
+`laya/finetune.py` trains Laya on such a log, leaving the `--holdout` plans out of training and
+scoring them at the end. `eval/training/jev-requests.jsonl.gz` is the log of two Jev runs over
+the eval set (829 distinct requests), so training needs no key. On an NVIDIA GPU (Windows,
+PowerShell, CUDA 12.x driver):
+
+```powershell
+git clone -b laya-backend https://github.com/bensheridan/tdd-gate.git; cd tdd-gate
+py -3.11 -m venv .venv
+.venv\Scripts\python -m pip install torch --index-url https://download.pytorch.org/whl/cu124
+.venv\Scripts\python -m pip install "laya[serve]==0.3.20"
+.venv\Scripts\python laya\finetune.py --log eval\training\jev-requests.jsonl.gz --holdout duration --out checkpoints\laya-no-duration --amp
+```
+
+On a Mac it runs on MPS without `--amp`, about an hour per plan held out.
+
+### Result: fine-tuned, leave-one-plan-out (laya 0.3.20, `laya-multilingual`, RTX 4070, `--amp`)
+
+Each plan held out of training in turn, 3 epochs, scored on rows it never trained on:
+
+| Held-out plan | | choice top-agree | noul mean\|p-jev\| | noul agree@0.5 (always-no) | AUC-vs-jev |
+|---|---|---|---|---|---|
+| `cart` (n=16 / 4,163) | zero-shot | 50.0% | 0.445 | 38.8% (76.6%) | 0.640 |
+| | fine-tuned | 81.2% | 0.175 | 83.0% | 0.836 |
+| `duration` (n=27 / 5,188) | zero-shot | 29.6% | 0.459 | 31.5% (78.1%) | 0.504 |
+| | fine-tuned | 92.6% | 0.185 | 79.9% | 0.805 |
+| `slugify` (n=20 / 3,755) | zero-shot | 30.0% | 0.386 | 52.9% (86.2%) | 0.565 |
+| | fine-tuned | 100.0% | 0.212 | 73.7% | 0.862 |
+
+Fine-tuning moves every fold from near-chance or weak (AUC 0.50 to 0.64, consistent with the
+zero-shot result above) to 0.80 to 0.86, and choice questions transfer well (81% to 100%
+top-agree) even though each held-out plan's own choice options never appear in training. Each
+fold trained in 6 to 7 minutes end to end at a peak of 6.1 GiB of the card's 12 GB, against about
+an hour per plan on MPS. A Mac run of the `cart` fold agreed (AUC 0.81).
+
+**The gates do not work yet, though.** These AUCs are per question, and 95% of the questions are
+coverage questions (12,402 of 13,114 nouls; gaming has 33, weakening 59, drift 176, blame 444).
+Run through the gates on the 44 `cart` cases, the `cart`-held-out checkpoint caught nothing:
+
+| `cart` cases | Jev | fine-tuned Laya (trained on the other two plans) |
+|---|---|---|
+| coverage conflicts found | 3/5 | 0/5 |
+| blame route | 9/10 | 4/10: contradicting tests sent to the code agent or a person |
+| gaming, weakening, drift problems caught | 5 of 6 | 0 of 6, no false alarms |
+
+Zero-shot Laya said yes to nearly everything; fine-tuned, it says no to nearly everything, since
+Jev says no to about four questions in five. A few missed findings sat just under their
+thresholds (`skipped-test` 0.68, `swallowed-error` 0.57), but the conflict and blame misses are
+not near a threshold, so recalibrating alone will not fix them. The rare gates have a handful of
+positive examples per plan, which is too few to learn from as the loss is weighted now.
+`finetune.py` now reports AUC per gate so this is visible, and has two options to try:
+`--yes-weight` (more loss on questions Jev answered yes) and `--balance-gates` (each gate gets
+about equal total weight, capped at 20x per row).
+
 ## Writing requirements
 
 - One behaviour per requirement, stated as the exact condition. When something is easy to confuse,
@@ -353,12 +461,9 @@ In priority order, from the first eval results. Re-score with `eval --cases eval
 7. **Review tooling**: labeling means editing JSON; a review page would be faster.
 8. **More plans**: three small plans is a start, not a benchmark. Include some with deliberately
    conflicting requirements, since that is where runs got stuck.
-9. **Try [Laya](https://huggingface.co/convaiinnovations/laya) as a local backend.** An open
-   (Apache 2.0) System 1 decision model with the same choice/score/noul shape as Jev, runnable
-   locally (`pip install "laya[serve]"`). Its own benchmarks claim higher accuracy, better
-   calibration and ~8x lower latency than Jev, but worse on 50+ options, and a third-party write-up
-   reports zero-shot accuracy near 36% without fine-tuning. Obstacle: a 512-token context (1,024
-   multilingual), while coverage, blame and drift states are ~1-1.6k tokens, so questions would
-   need smaller state (one requirement and one test per call). Plan: a `--backend laya` adapter
-   behind `SystemOneCaller`, then `eval --cases eval/cases` for both backends on the same cases.
-   The eval set could also serve as fine-tuning data.
+9. **Make fine-tuned Laya catch the rare findings, or drop it.** Leave-one-plan-out fine-tuning
+   (see [Laya as a local backend](#laya-as-a-local-backend)) reaches AUC 0.80-0.86 per question,
+   but on held-out `cart` the gates caught nothing. Re-run the three folds with `--yes-weight 4`
+   and with `--balance-gates`, and judge them by the per-gate AUC and by
+   `eval --cases eval/cases/<plan> --backend laya` with `LAYA_CHECKPOINT` set, not by overall
+   agreement. If the rare gates stay near chance, the fix is more plans (step 8), not tuning.

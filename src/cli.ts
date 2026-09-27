@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { blameExitCode, blameFailures, candidateHunks, matchTest } from "./blame.js";
-import { createClient } from "./client.js";
+import { BACKENDS, createClient, recordingClient, type Backend } from "./client.js";
 import { checkCoverage, coverageExitCode } from "./coverage.js";
 import { applicableDiffRules, checkDiff, diffExitCode, gateHunks, type Gate } from "./diffgates.js";
 import { checkDrift } from "./drift.js";
@@ -69,10 +70,14 @@ Usage:
 Options:
   --format text|json      Output format (default text). json is for the orchestrator.
   --concurrency <n>       Parallel requests (default 4)
+  --backend typesafe|laya Who answers the questions (default typesafe). laya is a local Laya
+                          server (python laya/server.py) at LAYA_URL, default http://127.0.0.1:8000
+  --log-requests <file>   Append every request, with its answers, to a JSONL file (training data
+                          for a local model); eval adds each case's plan and id
   --dry-run               Show what would be asked; no API call, no key needed
   -h, --help
 
-Environment: TYPESAFE_API_KEY
+Environment: TYPESAFE_API_KEY; with --backend laya, LAYA_URL and LAYA_API_KEY (both optional)
 
 Exit codes:
   coverage  0 all requirements covered, 1 a test conflicts or a requirement is uncovered / weak, 2 not judged / bad input
@@ -150,6 +155,15 @@ async function main(): Promise<number> {
     if (format !== "text" && format !== "json") throw new Error(`Unknown --format "${format}". Use text or json.`);
     const concurrency = Number(str(args, "concurrency") ?? 4);
     if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error("--concurrency must be a positive integer.");
+    const backend = (str(args, "backend") ?? "typesafe") as Backend;
+    if (!BACKENDS.includes(backend)) throw new Error(`Unknown --backend "${backend}". Use ${BACKENDS.join(" or ")}.`);
+    const logFile = str(args, "log-requests") ? resolve(str(args, "log-requests")!) : undefined;
+    // Tells apart the lines of runs that append to the same file.
+    const runId = randomUUID().slice(0, 8);
+    const makeClient = () => {
+        const client = createClient(backend);
+        return logFile ? recordingClient(client, logFile, { runId, backend, command: args.command }) : client;
+    };
     const dryRun = args.bools.has("dry-run");
     const testPaths = args.flags.get("tests") ?? [];
 
@@ -171,7 +185,7 @@ async function main(): Promise<number> {
             console.log(`\nWould send ${requests} request(s) with ${questions} question(s). Nothing was sent.`);
             return 0;
         }
-        const result = await checkDiff(createClient(), gate, diff, thresholds, { concurrency, tests });
+        const result = await checkDiff(makeClient(), gate, diff, thresholds, { concurrency, tests });
         console.log(format === "json" ? formatJson(result) : formatDiffGate(result));
         return diffExitCode(result);
     }
@@ -187,8 +201,10 @@ async function main(): Promise<number> {
             console.log(`\n${cases.length} case(s). Nothing was sent.`);
             return 0;
         }
-        const client = recorded ? undefined : createClient();
-        const run = await runEvalSet(cases, (c) => typesafeGates(client!, c.plan, 2), { recorded, concurrency });
+        const client = recorded ? undefined : createClient(backend);
+        const gatesFor = (c: (typeof cases)[number]) =>
+            typesafeGates(logFile ? recordingClient(client!, logFile, { runId, backend, command: "eval", plan: c.meta?.plan ?? "", caseId: c.id, gate: c.input.gate }) : client!, c.plan, 2);
+        const run = await runEvalSet(cases, gatesFor, { recorded, concurrency });
         if (format === "json") console.log(formatJson({ ...run, results: Object.fromEntries(run.results), unlabeled: run.unlabeled.map((c) => c.id) }));
         else console.log(args.bools.has("unlabeled") ? formatUnlabeled(run) : formatEvalRun(run));
         return run.errors.length ? 2 : 0;
@@ -214,7 +230,7 @@ async function main(): Promise<number> {
             testPaths: testPaths.length ? testPaths : ["."],
             agent: commandAgent(agentCmd),
             agentCommand: agentCmd,
-            gates: typesafeGates(createClient(), plan, 2),
+            gates: typesafeGates(makeClient(), plan, 2),
             runTests: commandTestRunner(testCommand),
             kinds,
             skipRequirements: str(args, "skip-requirements")?.split(",").map((k) => k.trim()),
@@ -255,12 +271,12 @@ async function main(): Promise<number> {
             testPaths: tests,
             agents: { "test-agent": commandAgent(testAgentCmd), "code-agent": commandAgent(codeAgentCmd) },
             gates: record
-                ? recordingGates(typesafeGates(createClient(), plan, concurrency), plan, (c) => saveCase(record, c), `run-${runStamp}`, {
+                ? recordingGates(typesafeGates(makeClient(), plan, concurrency), plan, (c) => saveCase(record, c), `run-${runStamp}`, {
                       requirements: str(args, "requirements")!,
                       testAgent: testAgentCmd,
                       codeAgent: codeAgentCmd,
                   })
-                : typesafeGates(createClient(), plan, concurrency),
+                : typesafeGates(makeClient(), plan, concurrency),
             runTests: commandTestRunner(testCommand),
             testCommand,
             maxTurns,
@@ -289,7 +305,7 @@ async function main(): Promise<number> {
             console.log(`\nWould send ${hunks.length} request(s), one per hunk, each with ${n + 2} question(s) (needed by each of ${n} requirement(s), extra, housekeeping). Nothing was sent.`);
             return 0;
         }
-        const result = await checkDrift(createClient(), diff, plan, { concurrency });
+        const result = await checkDrift(makeClient(), diff, plan, { concurrency });
         console.log(format === "json" ? formatJson(result) : formatDiffGate(result));
         return diffExitCode(result);
     }
@@ -305,7 +321,7 @@ async function main(): Promise<number> {
             console.log(`\nWould send ${tests.length} request(s), one per test, each with ${3 * n} question(s) (covers, asserts, contradicts for ${n} requirement(s)). Nothing was sent.`);
             return 0;
         }
-        const result = await checkCoverage(createClient(), tests, plan, { concurrency });
+        const result = await checkCoverage(makeClient(), tests, plan, { concurrency });
         console.log(format === "json" ? formatJson(result) : formatCoverage(result));
         return coverageExitCode(result);
     }
@@ -329,7 +345,7 @@ async function main(): Promise<number> {
         console.log(format === "json" ? formatJson({ blames: [], failures: [] }) : "No failing tests in the report.");
         return 0;
     }
-    const result = await blameFailures(createClient(), plan, failures, tests, hunks, { concurrency });
+    const result = await blameFailures(makeClient(), plan, failures, tests, hunks, { concurrency });
     console.log(format === "json" ? formatJson(result) : formatBlame(result));
     return blameExitCode(result);
 }
