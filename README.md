@@ -397,22 +397,36 @@ an hour per plan on MPS. A Mac run of the `cart` fold agreed (AUC 0.81).
 
 **The gates do not work yet, though.** These AUCs are per question, and 95% of the questions are
 coverage questions (12,402 of 13,114 nouls; gaming has 33, weakening 59, drift 176, blame 444).
-Run through the gates on the 44 `cart` cases, the `cart`-held-out checkpoint caught nothing:
+`finetune.py` has two options meant to fix that: `--yes-weight` (more loss on questions Jev
+answered yes) and `--balance-gates` (each gate gets about equal total weight, capped at 20x per
+row). Run through the gates on each plan's own cases, `--yes-weight 4` and `--balance-gates` leave
+the scorecard exactly where the untuned checkpoint left it, on all three plans:
 
-| `cart` cases | Jev | fine-tuned Laya (trained on the other two plans) |
+| cases | Jev | Laya (untuned, `--yes-weight 4` and `--balance-gates` all identical) |
 |---|---|---|
-| coverage conflicts found | 3/5 | 0/5 |
-| blame route | 9/10 | 4/10: contradicting tests sent to the code agent or a person |
-| gaming, weakening, drift problems caught | 5 of 6 | 0 of 6, no false alarms |
+| `cart` (44) conflicts found | 3/5 | 0/5 |
+| `cart` blame route | 9/10 | 4/10 |
+| `cart` gaming/weakening/drift caught | 5/6 | 0/6, no false alarms |
+| `duration` (50) conflicts found | 5/5 | 3/5 |
+| `duration` blame route | 15/15 | 10/15 |
+| `duration` gaming/weakening/drift caught | 5/6 (1 FP) | 1/6 (`skipped-test`), no false alarms |
+| `slugify` (41) conflicts found | 4/5 | 0/5 |
+| `slugify` blame route | 11/12 | 6/12 |
+| `slugify` gaming/weakening/drift caught | 5/6 (2 FP) | 3/6 (`special-case`, `swallowed-error`, `skipped-test`), 3 FP (`untraced`) |
 
-Zero-shot Laya said yes to nearly everything; fine-tuned, it says no to nearly everything, since
-Jev says no to about four questions in five. A few missed findings sat just under their
-thresholds (`skipped-test` 0.68, `swallowed-error` 0.57), but the conflict and blame misses are
-not near a threshold, so recalibrating alone will not fix them. The rare gates have a handful of
-positive examples per plan, which is too few to learn from as the loss is weighted now.
-`finetune.py` now reports AUC per gate so this is visible, and has two options to try:
-`--yes-weight` (more loss on questions Jev answered yes) and `--balance-gates` (each gate gets
-about equal total weight, capped at 20x per row).
+Both options do move the per-question numbers: held-out AUC by gate for `--yes-weight 4` /
+`--balance-gates` is blame 0.82 / 0.79 (`cart`), 0.85 / 0.83 (`duration`), 0.73 / 0.71 (`slugify`);
+coverage 0.86 / 0.83, 0.85 / 0.84, 0.86 / 0.86; gaming 0.90 / 0.81, 0.47 / 0.53, 0.94 / 0.94;
+weakening 0.70 / 0.77, 0.76 / 0.83, 0.67 / 0.77; drift 0.62 / 0.54, 0.67 / 0.63, 0.53 / 0.57 — up
+from near-chance zero-shot throughout, and comparing the raw per-case probabilities of the three
+checkpoints directly confirms it (6 to 13 of roughly 100 scored judgments flip which side of their
+threshold they land on, per plan). None of those flips changes a plan's conflict count, blame
+accuracy, or which gaming/weakening/drift rule fires: on `cart` two blame-route flips happen to
+cancel; elsewhere the rare-gate probabilities move but stay on the same side of their threshold.
+Only `slugify`'s already-lexical rules (`special-case`, `swallowed-error`, `skipped-test`) match
+Jev, in every checkpoint including the untuned one; reweighting neither helps nor hurts them. Each
+rare gate has 1 to 3 positive examples per plan, which both options confirm is too little to learn
+from, not a loss-weighting problem.
 
 ## Writing requirements
 
@@ -461,9 +475,11 @@ In priority order, from the first eval results. Re-score with `eval --cases eval
 7. **Review tooling**: labeling means editing JSON; a review page would be faster.
 8. **More plans**: three small plans is a start, not a benchmark. Include some with deliberately
    conflicting requirements, since that is where runs got stuck.
-9. **Make fine-tuned Laya catch the rare findings, or drop it.** Leave-one-plan-out fine-tuning
-   (see [Laya as a local backend](#laya-as-a-local-backend)) reaches AUC 0.80-0.86 per question,
-   but on held-out `cart` the gates caught nothing. Re-run the three folds with `--yes-weight 4`
-   and with `--balance-gates`, and judge them by the per-gate AUC and by
-   `eval --cases eval/cases/<plan> --backend laya` with `LAYA_CHECKPOINT` set, not by overall
-   agreement. If the rare gates stay near chance, the fix is more plans (step 8), not tuning.
+9. **Fine-tuned Laya needs more plans, not more tuning.** Both `--yes-weight 4` and
+   `--balance-gates` were run on all three plans (see
+   [Laya as a local backend](#laya-as-a-local-backend)): both raise the per-question AUC and
+   measurably shift individual probabilities, but neither changes a single plan's conflict count,
+   blame accuracy, or which gaming/weakening/drift rule fires versus the untuned checkpoint. Each
+   rare gate has 1 to 3 positive examples per plan; that is the ceiling this data can teach, not a
+   loss-weighting problem. Revisit fine-tuning after step 8 (more plans) gives each rare gate
+   double digits of positive examples, not before.
