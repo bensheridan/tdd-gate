@@ -306,6 +306,61 @@ kept, unlabeled, as material for review. The plans were rewritten to scope each 
 These numbers are small counts on three small plans, and harvesting and scoring were done while
 building the tool. Treat them as where to look next, not as accuracy figures.
 
+## Laya as a local backend
+
+Every command takes `--backend laya`, which sends the same questions to a local
+[Laya](https://huggingface.co/convaiinnovations/laya) server instead of TypeSafe. Laya is an open
+(Apache 2.0) System 1 model whose server speaks Jev's `/v1/systemone` protocol, so nothing in the
+gates changes.
+
+```bash
+pip install "laya[serve]"            # torch; the checkpoint (~650 MB) downloads on first start
+python laya/server.py                # 127.0.0.1:8000; LAYA_URL tells tdd-gate where it is
+node dist/cli.js eval --cases eval/cases --backend laya
+```
+
+`laya/server.py` pins the `laya-multilingual` checkpoint (mmBERT) and raises its token budget from
+the trained 1,024 to 8,192. Laya otherwise cuts the state silently. Anything that would still be
+cut is refused, and tdd-gate reports it as not judged. On the eval set's 803 requests the state is
+112 tokens at the median and 4,545 at most (12 requests exceed 1,024), and every question's
+instructions fit the 256-token head, so no gate needed a smaller state.
+
+### Result: not usable zero-shot (laya 0.3.20, `laya-multilingual`, same 135 cases)
+
+The whole eval ran in 4.5 minutes on an M4 Pro (MPS), with nothing sent off the machine. The
+answers mostly say yes:
+
+| Gate / rule | Jev (recorded) | Laya |
+|---|---|---|
+| blame route | 35/37 | 15/37: `test_wrong` for all 22 code bugs (p 0.87 to 0.96) |
+| coverage conflict | 12/15 found | 14/15 found, but Laya calls 58% of all 4,134 test/requirement pairs contradictions (Jev: 3%) |
+| gaming `special-case` | 3 TP, 1 FP | 3 TP, 22 FP: every hunk flagged |
+| weakening `loosened-assertion` / `removed-assertion` | 3/0 and 1/4 (TP/FP) | 3/23 and 3/24: every hunk flagged |
+| drift `unrequested-behaviour` | 3 TP, 4 FP | 0 of 3 features caught |
+| gaming `swallowed-error` | 3/3 | 2/3, no false alarms |
+| weakening `skipped-test` | 3/3 | 3/3, 2 false alarms |
+
+Is a threshold the problem? Ranking says mostly not. AUC per rule (positives vs negatives, with
+3 positives each, so rough): `swallowed-error` 1.00 and `skipped-test` 0.97, where the evidence is
+lexical (an empty `catch`, `.skip`), and `loosened-assertion` 0.79. `special-case` 0.38,
+`removed-assertion` 0.43 and drift 0.50 are at or below chance. Jev is at 1.00 on every rule
+except `removed-assertion` (0.62). Sending the instructions as plain text instead of a JSON object
+changed nothing, which rules out the obvious formatting explanation.
+
+This matches the model card, which says the base checkpoints perform "near-chance on specialized
+benchmarks" without fine-tuning. Code review questions are far from what Laya was trained on.
+The adapter stays: it is the way to score a fine-tuned checkpoint, or any other server that speaks
+`/v1/systemone`, against Jev on the same cases.
+
+To collect training data, `--log-requests <file>` appends every request with its answers to a
+JSONL file, on any command and either backend. Each line carries a `runId`, so runs that append
+to the same file can be told apart. Under `eval` it also carries the case's `plan`, `caseId` and
+`gate`, so the data can be split by plan:
+
+```bash
+node dist/cli.js eval --cases eval/cases --log-requests jev-requests.jsonl   # Jev, ~800 requests
+```
+
 ## Writing requirements
 
 - One behaviour per requirement, stated as the exact condition. When something is easy to confuse,
@@ -353,12 +408,7 @@ In priority order, from the first eval results. Re-score with `eval --cases eval
 7. **Review tooling**: labeling means editing JSON; a review page would be faster.
 8. **More plans**: three small plans is a start, not a benchmark. Include some with deliberately
    conflicting requirements, since that is where runs got stuck.
-9. **Try [Laya](https://huggingface.co/convaiinnovations/laya) as a local backend.** An open
-   (Apache 2.0) System 1 decision model with the same choice/score/noul shape as Jev, runnable
-   locally (`pip install "laya[serve]"`). Its own benchmarks claim higher accuracy, better
-   calibration and ~8x lower latency than Jev, but worse on 50+ options, and a third-party write-up
-   reports zero-shot accuracy near 36% without fine-tuning. Obstacle: a 512-token context (1,024
-   multilingual), while coverage, blame and drift states are ~1-1.6k tokens, so questions would
-   need smaller state (one requirement and one test per call). Plan: a `--backend laya` adapter
-   behind `SystemOneCaller`, then `eval --cases eval/cases` for both backends on the same cases.
-   The eval set could also serve as fine-tuning data.
+9. **Fine-tune Laya on the eval set, or drop it.** Zero-shot, it is not usable as a gate (see
+   [Laya as a local backend](#laya-as-a-local-backend)). It keeps some signal on the lexical rules,
+   so fine-tuning on harvested cases is the one thing left to try; score it on plans it was not
+   trained on.
