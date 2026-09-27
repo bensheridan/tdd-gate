@@ -4,3 +4,4 @@ dist
 *.jsonl
 __pycache__/
 checkpoints/
+.venv/

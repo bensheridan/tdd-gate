@@ -361,6 +361,21 @@ to the same file can be told apart. Under `eval` it also carries the case's `pla
 node dist/cli.js eval --cases eval/cases --log-requests jev-requests.jsonl   # Jev, ~800 requests
 ```
 
+`laya/finetune.py` trains Laya on such a log, leaving the `--holdout` plans out of training and
+scoring them at the end. `eval/training/jev-requests.jsonl.gz` is the log of two Jev runs over
+the eval set (829 distinct requests), so training needs no key. On an NVIDIA GPU (Windows,
+PowerShell, CUDA 12.x driver):
+
+```powershell
+git clone -b laya-backend https://github.com/bensheridan/tdd-gate.git; cd tdd-gate
+py -3.11 -m venv .venv
+.venv\Scripts\python -m pip install torch --index-url https://download.pytorch.org/whl/cu124
+.venv\Scripts\python -m pip install "laya[serve]==0.3.20"
+.venv\Scripts\python laya\finetune.py --log eval\training\jev-requests.jsonl.gz --holdout duration --out checkpoints\laya-no-duration --amp
+```
+
+On a Mac it runs on MPS without `--amp`, about an hour per plan held out.
+
 ## Writing requirements
 
 - One behaviour per requirement, stated as the exact condition. When something is easy to confuse,

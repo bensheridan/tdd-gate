@@ -18,6 +18,7 @@ Uses Laya internals (Agent._encode_state, collate_items, the model's forward); p
 """
 import argparse
 import glob
+import gzip
 import json
 import math
 import os
@@ -41,7 +42,7 @@ def case_plans(cases_dir):
     """caseId -> plan, from the case files, for log lines written before `plan` was logged."""
     plans = {}
     for path in glob.glob(os.path.join(cases_dir, "**", "*.json"), recursive=True):
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             c = json.load(f)
         if "id" in c:
             plans[c["id"]] = (c.get("meta") or {}).get("plan") or os.path.relpath(path, cases_dir).split(os.sep)[0]
@@ -70,7 +71,8 @@ def load_requests(log_path, plans):
     """Merged requests: {key: {plan, caseId, state, questions, targets: {qid: [lists]}}}."""
     merged = {}
     skipped = 0
-    with open(log_path) as f:
+    opener = gzip.open if log_path.endswith(".gz") else open
+    with opener(log_path, "rt", encoding="utf-8") as f:
         for line in f:
             r = json.loads(line)
             if "error" in r or "answers" not in r:
@@ -134,12 +136,26 @@ def batches(items, rows, shuffle, max_tokens=8192):
         yield [items[i] for i in g]
 
 
+# bf16 autocast (--amp): the weights and optimizer stay fp32 and the model returns fp32 logits, so
+# the loss is unaffected; the encoder's matrix products run in bf16. Meant for CUDA GPUs.
+AMP = False
+
+
 def forward(agent, group):
     b = collate_items([[{k: it[k] for k in ("ids", "markers", "qtype", "target")} for it in group]], agent.tok.pad_token_id)
     dev = agent.device
-    logits, _ = agent.model(b["input_ids"].to(dev), b["attention_mask"].to(dev), b["marker_pos"].to(dev),
-                            b["marker_mask"].to(dev), b["qtype"].to(dev))
-    return logits, b["target"].to(dev), b["marker_mask"].to(dev)
+    with torch.autocast(dev.type, dtype=torch.bfloat16, enabled=AMP):
+        logits, _ = agent.model(b["input_ids"].to(dev), b["attention_mask"].to(dev), b["marker_pos"].to(dev),
+                                b["marker_mask"].to(dev), b["qtype"].to(dev))
+    return logits.float(), b["target"].to(dev), b["marker_mask"].to(dev)
+
+
+def memory(agent):
+    if agent.device.type == "mps":
+        return f" mps {torch.mps.driver_allocated_memory() / 2**30:.1f} GiB"
+    if agent.device.type == "cuda":
+        return f" cuda peak {torch.cuda.max_memory_allocated() / 2**30:.1f} GiB"
+    return ""
 
 
 def soft_ce(logits, target, mask, temperature=1.0):
@@ -229,8 +245,11 @@ def main():
     ap.add_argument("--val-fraction", type=float, default=0.1, help="training cases kept back for temperatures")
     ap.add_argument("--limit", type=int, default=0, help="train on at most this many rows (smoke tests)")
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--device", default=None)
+    ap.add_argument("--device", default=None, help="torch device, e.g. cuda or mps (default: best available)")
+    ap.add_argument("--amp", action="store_true", help="bf16 autocast; faster on recent NVIDIA GPUs")
     args = ap.parse_args()
+    global AMP
+    AMP = args.amp
     random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -262,7 +281,7 @@ def main():
     print("before fine-tuning (agreement with Jev):", flush=True)
     for name, part in (("val", val), ("held-out", held)):
         if part:
-            report(name, part, predict(agent, part, args.rows), {})
+            report(name, part, predict(agent, part, args.rows, args.max_tokens), {})
 
     model = agent.model
     enc_params = list(model.encoder.parameters())
@@ -291,16 +310,20 @@ def main():
             sched.step()
             step += 1
             total, n = total + loss.item() * len(group), n + len(group)
+            if agent.device.type == "mps":
+                # MPS keeps freed blocks cached per shape; with a new batch shape every step the
+                # cache grows until it runs out of memory (twice, at step ~250). Release it.
+                torch.mps.empty_cache()
             if step % 50 == 0:
-                print(f"  epoch {epoch + 1} step {step}/{steps} loss {total / n:.4f} ({time.time() - started:.0f}s)", flush=True)
+                print(f"  epoch {epoch + 1} step {step}/{steps} loss {total / n:.4f} ({time.time() - started:.0f}s){memory(agent)}", flush=True)
         print(f"epoch {epoch + 1}: train loss {total / max(1, n):.4f}", flush=True)
         if val:
-            report("val", val, predict(agent, val, args.rows), {})
+            report("val", val, predict(agent, val, args.rows, args.max_tokens), {})
 
     # Temperatures per question type, fitted on the validation cases, as Laya applies them.
     temps = {}
     if val:
-        val_logits = predict(agent, val, args.rows)
+        val_logits = predict(agent, val, args.rows, args.max_tokens)
         for qt in sorted({it["qtype"] for it in val}):
             sel = [(z, np.array(it["target"])) for z, it in zip(val_logits, val) if it["qtype"] == qt]
             temps[qt] = fit_temperature([z for z, _ in sel], [y for _, y in sel])
@@ -309,9 +332,9 @@ def main():
     print("after fine-tuning (agreement with Jev):", flush=True)
     for name, part in (("val", val), ("held-out", held)):
         if part:
-            report(name, part, predict(agent, part, args.rows), temps)
+            report(name, part, predict(agent, part, args.rows, args.max_tokens), temps)
 
-    save(agent, args, temps, {"train_rows": len(train), "val_rows": len(val), "holdout": args.holdout,
+    save(agent, args, temps, {"device": str(agent.device), "amp": AMP, "train_rows": len(train), "val_rows": len(val), "holdout": args.holdout,
                               "plans": plans, "steps": step, "seconds": round(time.time() - started)})
 
 
