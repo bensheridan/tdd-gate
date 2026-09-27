@@ -467,3 +467,17 @@ In priority order, from the first eval results. Re-score with `eval --cases eval
    and with `--balance-gates`, and judge them by the per-gate AUC and by
    `eval --cases eval/cases/<plan> --backend laya` with `LAYA_CHECKPOINT` set, not by overall
    agreement. If the rare gates stay near chance, the fix is more plans (step 8), not tuning.
+
+   The same zero-shot model was also tried as a local first pass for
+   [semantic-lint](https://github.com/bensheridan/semantic-lint): Laya judges each hunk, and only
+   the hunks it flags go to Jev. It needs no code change (the SDK honours `TYPESAFE_BASE_URL`), and
+   Laya rarely misses: 14 of the 15 known violations it judged in semlint's two labelled sets.
+   But on a real 13-hunk diff it flagged every hunk it judged: 12 of 12 with the seed rules
+   (`no-hardcoded-credentials` on all 12), and 7 of 7 with the Family Hustle rules, none of which
+   applied to that code. A hunk stays local only if *every* rule clears it, and with 5 to 7 rules
+   per hunk one false alarm from any of them escalates it, so nearly everything went to Jev and the
+   pass saved nothing. The per-case evals hid this: they hold only violations and near-misses, no ordinary
+   code. So for any local-filter use, measure the share of ordinary hunks cleared by all rules,
+   not per-rule precision. The same compounding applies to gaming and weakening here, which ask
+   several rules per hunk. Rules longer than about 600 characters also exceed Laya's 256-token
+   question limit and cannot be asked at all.
